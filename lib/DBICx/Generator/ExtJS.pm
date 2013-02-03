@@ -1,6 +1,6 @@
-use strict;
-use warnings;
 package DBICx::Generator::ExtJS;
+use Moose;
+use namespace::autoclean;
 
 =head1 NAME
 
@@ -10,7 +10,7 @@ DBICx::Generator::ExtJS - ExtJS MVC class generator
 
   use DBICx::Generator::ExtJS;
 
-  my $extjs_generator = DBICx::Generator::ExtJS->new('My::Schema');
+  my $extjs_generator = DBICx::Generator::ExtJS->new(schema_name => 'My::Schema');
 
   $extjs_generator->make_model();
 
@@ -18,21 +18,30 @@ DBICx::Generator::ExtJS - ExtJS MVC class generator
 
 use Carp;
 use UNIVERSAL::require;
-use Data::Dump qw/dump/;
 
-sub new {
-  my ($self, $schema_name) = @_;
-  croak "Mandatory schema name parameter is missing" unless $schema_name;
+has 'schema_name' => ( 
+  is => 'ro',
+  isa => 'Str',
+  required => 1
+);
 
-  $schema_name->require() or croak $!;
-  my $schema;
-  eval '$schema = ' . $schema_name . '->connect();';
+has 'schema' => ( is => 'rw' );
+
+sub BUILD {
+  my $self = shift;
+
+  $self->schema_name->require() or croak 'Unable to found/load ' . $self->schema_name . " ($!)";
+
+  eval '$self->schema(' . $self->schema_name . '->connect());';
+  $self->schema or croak 'Unable to connect to ' . $self->schema_name;
 
   my (@pk, $table);
-  foreach my $rsrc ($schema->sources) {
-    $table = $schema->source($rsrc); 
+  foreach my $rsrc ($self->schema->sources) {
+    $table = $self->schema->source($rsrc); 
     @pk = $table->primary_columns;
   }
 }
+
+__PACKAGE__->meta->make_immutable;
 
 1;

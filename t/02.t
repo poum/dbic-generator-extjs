@@ -7,7 +7,7 @@ use lib 'lib';
 
 require_ok('DBICx::Generator::ExtJS');
 
-my $generator = DBICx::Generator::ExtJS->new('SCM::Schema');
+my $generator = DBICx::Generator::ExtJS->new(schema_name => 'SCM::Schema');
 
 ok($generator);
 
