@@ -27,6 +27,8 @@ has 'schema_name' => (
 
 has 'schema' => ( is => 'rw' );
 
+has 'tables' => (is => 'rw');
+
 sub BUILD {
   my $self = shift;
 
@@ -35,12 +37,33 @@ sub BUILD {
   eval '$self->schema(' . $self->schema_name . '->connect());';
   $self->schema or croak 'Unable to connect to ' . $self->schema_name;
 
-  my (@pk, $table);
-  foreach my $rsrc ($self->schema->sources) {
-    $table = $self->schema->source($rsrc); 
-    @pk = $table->primary_columns;
-  }
+  $self->tables([$self->schema->sources]);
 }
+
+=head2 METHODS
+
+=head3 models
+
+  generate all ExtJS models found in the DBIx::Class Schema
+
+=cut
+sub models {
+  my $self = shift;
+  $self->model($_) foreach @{$self->tables()};
+}
+
+=head3 model
+
+  generate specified ExtJS model
+
+=cut
+sub model {
+  my $self = shift;
+  my $model = shift or croak "Model name required !";
+
+  die dump($self->schema->source($model));
+}
+
 
 __PACKAGE__->meta->make_immutable;
 

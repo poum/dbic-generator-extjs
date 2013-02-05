@@ -4,6 +4,8 @@ use warnings;
 use Test::More;
 use Test::Exception;
 
+use Data::Dump qw/dump/;
+
 use lib 't/lib';
 use lib 'lib';
 
@@ -19,6 +21,10 @@ throws_ok {$generator = DBICx::Generator::ExtJS->new(schema_name => 'Sorry::No::
   qr/Unable to found\/load Sorry::No::Schema::Here/, 
   'non existent schema detected';
 
-ok($generator = DBICx::Generator::ExtJS->new(schema_name => 'My::Schema'));
+ok($generator = DBICx::Generator::ExtJS->new(schema_name => 'My::Schema'), 'existant schema loaded correctly');
+
+is_deeply($generator->tables, [qw/Another Basic/], 'schema tables found');
+
+ok($generator->model('Basic'), 'ExtJS Basic model generation');
 
 done_testing;
