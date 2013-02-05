@@ -19,16 +19,37 @@ DBICx::Generator::ExtJS - ExtJS MVC class generator
 use Carp;
 use UNIVERSAL::require;
 
+=head2 METHODS
+
+=head3 schema_name
+
+    give the name of the schema module passed as parameter
+
+=cut
 has 'schema_name' => ( 
   is => 'ro',
   isa => 'Str',
   required => 1
 );
 
+=head3 schema
+
+    return the DBIx::Class schema object
+
+=cut
 has 'schema' => ( is => 'rw' );
 
+=head3 tables
+
+    return an array reference of table name of the schema
+
+=cut
 has 'tables' => (is => 'rw');
 
+# constructor
+#
+# load/store the schema using the name given as parameter
+# and initialize the 'tables' array ref 
 sub BUILD {
   my $self = shift;
 
@@ -39,8 +60,6 @@ sub BUILD {
 
   $self->tables([$self->schema->sources]);
 }
-
-=head2 METHODS
 
 =head3 models
 
@@ -59,9 +78,32 @@ sub models {
 =cut
 sub model {
   my $self = shift;
-  my $model = shift or croak "Model name required !";
+  my $name = shift or croak "Model name required !";
 
-  die dump($self->schema->source($model));
+  my $resultset = $self->schema->source($name) or croak "Model $name does'nt exist ! ($!)";
+  my $model = { 
+    extend => 'Ext.data.Model',
+    fields => [],
+    validations => [],
+    associations => [],
+    proxy => {
+      type => 'ajax',
+      api => {
+        read   => '/' . lc $name . '/read',
+        create => '/' . lc $name . '/create',
+        update => '/' . lc $name . '/update',
+        destroy => '/' . lc $name . '/delete'
+      }
+    }
+  };
+  my @columns = $resultset->columns;
+  my $field;
+  foreach my $column (@columns) {
+    $field = { name => $column };
+    push @{$model->{fields}}, $field;
+  }
+
+  return $model;
 }
 
 

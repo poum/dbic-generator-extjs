@@ -27,4 +27,6 @@ is_deeply($generator->tables, [qw/Another Basic/], 'schema tables found');
 
 ok($generator->model('Basic'), 'ExtJS Basic model generation');
 
+die dump($generator->model('Basic'));
+
 done_testing;
