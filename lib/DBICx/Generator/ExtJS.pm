@@ -97,9 +97,12 @@ sub model {
     }
   };
   my @columns = $resultset->columns;
-  my $field;
+  my ($field, $info);
   foreach my $column (@columns) {
     $field = { name => $column };
+
+    $info = $resultset->column_info($column);
+    $field->{type} = $info->{data_type};
     push @{$model->{fields}}, $field;
   }
 
