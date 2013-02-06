@@ -23,7 +23,7 @@ use UNIVERSAL::require;
 
 =head3 schema_name
 
-    give the name of the schema module passed as parameter
+  give the name of the schema module passed as parameter
 
 =cut
 has 'schema_name' => ( 
@@ -34,18 +34,24 @@ has 'schema_name' => (
 
 =head3 schema
 
-    return the DBIx::Class schema object
+  return the DBIx::Class schema object
 
 =cut
 has 'schema' => ( is => 'rw' );
 
 =head3 tables
 
-    return an array reference of table name of the schema
+  return an array reference of all schema table names
 
 =cut
 has 'tables' => (is => 'rw');
 
+=head3 pierreDeRosette
+
+  return an hashref of all known type ExtJS translation
+  (MySQL, PostgreSQL & Oracle for now)
+
+=cut
 has 'pierreDeRosette' => (
   is  => 'ro',
   isa => 'HashRef',
@@ -183,6 +189,12 @@ sub model {
   return $model;
 }
 
+=head3 translateType
+
+  translate the original type in ExtJS corresponding type.
+  if this type is unknown, return 'auto'
+
+=cut
 sub translateType {
   my $self = shift;
   my $schemaType = shift or croak "Missing schema type to translate !";
