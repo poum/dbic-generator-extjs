@@ -1,10 +1,13 @@
 package DBICx::Generator::ExtJS;
 use Moose;
 use namespace::autoclean;
+use JSON::DWIW;
+use Carp;
+use UNIVERSAL::require;
 
-=head1 NAME
+use Data::Dump qw/dump/;
 
-DBICx::Generator::ExtJS - ExtJS MVC class generator
+# ABSTRACT: DBICx::Generator::ExtJS - ExtJS MVC class generator
 
 =head1 SYNOPSYS
 
@@ -16,8 +19,6 @@ DBICx::Generator::ExtJS - ExtJS MVC class generator
 
 =cut
 
-use Carp;
-use UNIVERSAL::require;
 
 =head2 METHODS
 
@@ -37,7 +38,10 @@ has 'schema_name' => (
   return the DBIx::Class schema object
 
 =cut
-has 'schema' => ( is => 'rw' );
+has 'schema' => ( 
+  is => 'rw',
+  isa => 'DBIx::Class::Schema'
+);
 
 =head3 tables
 
@@ -45,6 +49,38 @@ has 'schema' => ( is => 'rw' );
 
 =cut
 has 'tables' => (is => 'rw');
+
+=head3 order
+
+  return an hashref of applied order to json extjs generated file
+
+=cut
+has 'order' => (
+  is => 'ro',
+  isa => 'HashRef',
+  default => sub {
+
+    {
+      model => [ qw/extend fields validations associations proxy/ ],
+      fields => [ qw/name type defaultValue/ ],
+      proxy => [ qw/type api/ ],
+    }
+  }
+);
+
+has 'json' => (
+  is => 'ro',
+  isa => 'JSON::DWIW',
+  default => sub { 
+    new JSON::DWIW->new({ 
+      pretty    => 1, 
+      bare_keys => 1,
+      convert_bool => 1,
+      sort_keys => 1,
+      bare_solidus => 1
+    }) 
+  }
+);
 
 =head3 pierreDeRosette
 
@@ -124,6 +160,7 @@ has 'pierreDeRosette' => (
   }
 );
 
+
 # constructor
 #
 # load/store the schema using the name given as parameter
@@ -160,32 +197,76 @@ sub model {
 
   croak "$name does'nt exist !" unless grep /^$name$/, @{$self->tables()};
 
-  my $resultset = $self->schema->source($name); 
-  my $model = { 
-    extend => 'Ext.data.Model',
-    fields => [],
-    validations => [],
-    associations => [],
-    proxy => {
+  my ($model, $model_name) = $self->_getJSON($name, 'model');
+  $model->{extend} = 'Ext.data.Model' unless exists $model->{extend};
+  unless (exists $model->{proxy}) {
+    my $url = '/' . lc $name . '/';
+    $model->{proxy} = {
       type => 'ajax',
       api => {
-        read   => '/' . lc $name . '/read',
-        create => '/' . lc $name . '/create',
-        update => '/' . lc $name . '/update',
-        destroy => '/' . lc $name . '/delete'
+        read    => $url . 'read',
+        create  => $url . 'create',
+        update  => $url . 'update',
+        destroy => $url . 'delete'
       }
-    }
-  };
-  my @columns = $resultset->columns;
-  my ($field, $info);
-  foreach my $column (@columns) {
-    $field = { name => $column };
-
-    $info = $resultset->column_info($column);
-    $field->{type} = $self->translateType($info->{data_type});
-    push @{$model->{fields}}, $field;
+    };
   }
 
+  my $resultset = $self->schema->source($name); 
+  my @columns = $resultset->columns;
+  my ($field, $info, @updatedField);
+  foreach my $column (@columns) {
+    $info = $resultset->column_info($column);
+
+    # the field already exists ?
+    @updatedField = grep { $_->{name} eq $column } @{$model->{fields}};
+    $field = @updatedField ? $updatedField[0] : { name => $column };
+
+    $field->{type} = $self->translateType($info->{data_type});
+
+    if ($info->{default_value}) {
+      if ($field->{type} eq 'boolean') {
+        $field->{defaultValue} = $info->{default_value} eq 'true' ? JSON::DWIW->true : JSON::DWIW->false;  
+      } 
+      else {
+        $field->{defaultValue} = $info->{default_value}; 
+      }
+    }
+    push @{$model->{fields}}, $field unless @updatedField;
+
+    # the presence validation already exists ?
+    @updatedField = grep { $_->{field} eq $column and $_->{type} eq 'presence' } @{$model->{validations}};
+    if ($info->{is_nullable}) {
+      # supress presence validation if the field is now nullable
+      $updatedField[0] = undef if @updatedField;
+    }
+    else {
+      # add presence validation if it does'nt already exist
+      push @{$model->{validations}}, { type => 'presence', field => $column } unless @updatedField;
+    }
+
+    # the max size validation already exists ?
+    @updatedField = grep { $_->{field} eq $column and $_->{type} eq 'length' and $_->{max} } @{$model->{validations}};
+    if ($info->{size} and $field->{type} eq 'string') {
+      $field = @updatedField ? $updatedField[0] : { field => $column, type => 'length' };
+      $field->{max} = $info->{size};
+      push @{$model->{validations}}, $field unless @updatedField;
+    }
+    else {
+      # suppress the validation if it's became useless
+      $updatedField[0] = undef if @updatedField; 
+    }
+  }
+
+  mkdir 'js' unless -e 'js';
+  mkdir 'js/app' unless -e 'js/app';
+  mkdir 'js/app/model' unless -e 'js/app/model';
+
+  open(my $fh, '>', 'js/app/model/' . $name . '.js') or croak $!;
+  print $fh "Ext.define('$name', ";
+  warn $model;
+  print $fh $self->json->to_json($model);
+  print $fh ');';
   return $model;
 }
 
@@ -202,6 +283,40 @@ sub translateType {
   return $self->pierreDeRosette->{$schemaType} || 'auto';
 }
 
+# _getJSON
+# 
+#  get previous 'type' ExtJS file if any with associated full name
+#
+# parameters:
+# - name: file name without the .js extension
+# - type: type
+#
+# return
+# - an array with the reference of the decoded Perl structure and the type name
+#
+sub _getJSON {
+  my ($self, $name, $type) = @_;
+
+  my $filename = "js/app/$type/$name.js"; 
+  my $json = {};
+  my $type_name;
+  if (-e $filename) {
+    open(my $fh, '<', $filename);
+    my $file = '';
+    while (<$fh>) {
+      chomp;
+      $file .= $_; 
+    }
+    close $fh;
+
+    if ($file =~ /Ext\.define\s*\(\s*('[^']+')\s*,\s*(\{.+\})\);/) {
+      $type_name = $1;
+      $json = $self->json->from_json($2);
+    }
+  }
+
+  return ($json, $type_name);
+}
 
 __PACKAGE__->meta->make_immutable;
 

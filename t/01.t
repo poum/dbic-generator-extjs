@@ -6,8 +6,11 @@ use Test::Exception;
 
 use Data::Dump qw/dump/;
 
-use lib 't/lib';
-use lib 'lib';
+use FindBin qw($Bin);
+use lib "$Bin/../lib";
+use lib "$Bin/lib";
+
+my $oldDir = chdir $Bin;
 
 require_ok('DBICx::Generator::ExtJS');
 
@@ -44,5 +47,7 @@ throws_ok { $generator->model('SantaClaus') }
 ok($generator->model('Basic'), 'ExtJS Basic model generation');
 
 diag dump($generator->model('Basic'));
+
+chdir $oldDir;
 
 done_testing;
