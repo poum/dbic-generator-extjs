@@ -4,6 +4,7 @@ use namespace::autoclean;
 use JSON::DWIW;
 use Carp;
 use UNIVERSAL::require;
+use File::Path qw/make_path/;
 
 use Data::Dump qw/dump/;
 
@@ -66,6 +67,17 @@ has 'order' => (
       proxy => [ qw/type api/ ],
     }
   }
+);
+
+=head3 path
+
+  the path where the js files can be retrived / writes
+
+=cut
+has 'path' => (
+  is => 'rw',
+  isa => 'Str',
+  default => 'js/app'
 );
 
 has 'json' => (
@@ -258,11 +270,9 @@ sub model {
     }
   }
 
-  mkdir 'js' unless -e 'js';
-  mkdir 'js/app' unless -e 'js/app';
-  mkdir 'js/app/model' unless -e 'js/app/model';
+  make_path($self->path . '/model');
 
-  open(my $fh, '>', 'js/app/model/' . $name . '.js') or croak $!;
+  open(my $fh, '>', $self->path . '/model/' . $name . '.js') or croak $!;
   print $fh "Ext.define('$name', ";
   warn $model;
   print $fh $self->json->to_json($model);
@@ -297,7 +307,7 @@ sub translateType {
 sub _getJSON {
   my ($self, $name, $type) = @_;
 
-  my $filename = "js/app/$type/$name.js"; 
+  my $filename = join '/', $self->path, $type, "$name.js"; 
   my $json = {};
   my $type_name;
   if (-e $filename) {
