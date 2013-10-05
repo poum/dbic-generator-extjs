@@ -1,12 +1,11 @@
 package DBICx::Generator::ExtJS;
+
 use Moose;
 use namespace::autoclean;
 use JSON::DWIW;
 use Carp;
 use UNIVERSAL::require;
 use File::Path qw/make_path/;
-
-use Data::Dump qw/dump/;
 
 # ABSTRACT: DBICx::Generator::ExtJS - ExtJS MVC class generator
 
@@ -32,6 +31,16 @@ has 'schema_name' => (
   is => 'ro',
   isa => 'Str',
   required => 1
+);
+
+=head3 js_name
+
+  the javascript file namespace
+
+=cut
+has 'js_namespace' => (
+  is => 'rw',
+  isa => 'Str'
 );
 
 =head3 schema
@@ -71,7 +80,7 @@ has 'order' => (
 
 =head3 path
 
-  the path where the js files can be retrived / writes
+  the path where the js files can be retrieved / writes
 
 =cut
 has 'path' => (
@@ -177,15 +186,25 @@ has 'pierreDeRosette' => (
 #
 # load/store the schema using the name given as parameter
 # and initialize the 'tables' array ref 
+# create a javascript namespace if necessary
 sub BUILD {
   my $self = shift;
 
   $self->schema_name->require() or croak 'Unable to found/load ' . $self->schema_name . " ($!)";
+  
+  #eval '$self->schema(' . $self->schema_name . '->connect());';
+  $self->schema($self->schema_name->connect());
 
-  eval '$self->schema(' . $self->schema_name . '->connect());';
   $self->schema or croak 'Unable to connect to ' . $self->schema_name;
 
   $self->tables([$self->schema->sources]);
+
+  unless ($self->js_namespace) {
+    my $js_namespace = $self->schema_name;
+    $js_namespace =~ s/::Schema$//;
+    $js_namespace =~ s/::/./g;
+    $self->js_namespace($js_namespace);
+  }
 }
 
 =head3 models
@@ -196,6 +215,19 @@ sub BUILD {
 sub models {
   my $self = shift;
   $self->model($_) foreach @{$self->tables()};
+}
+
+=head3 extjs_model_name
+
+This method returns the ExtJS model name for a table and can be overridden
+in a subclass.
+
+=cut
+
+sub extjs_model_name {
+    my ( $self, $tablename ) = @_;
+    $tablename = $tablename =~ m/^(?:\w+::)* (\w+)$/x ? $1 : $tablename;
+    return ucfirst($tablename);
 }
 
 =head3 model
@@ -233,7 +265,7 @@ sub model {
     # the field already exists ?
     @updatedField = grep { $_->{name} eq $column } @{$model->{fields}};
     $field = @updatedField ? $updatedField[0] : { name => $column };
-
+  
     $field->{type} = $self->translateType($info->{data_type});
 
     if ($info->{default_value}) {
@@ -270,13 +302,46 @@ sub model {
     }
   }
 
+  my ($relinfo, $attrs, $modelname, $reltype);
+  foreach my $relation ($resultset->relationships()) {
+    $relinfo = $resultset->relationship_info($relation);
+
+    carp "\t\tskipping because multi-cond rels aren't supported by ExtJS 4\n" 
+        if keys %{ $relinfo->{cond} } > 1;
+
+    my $attrs = $relinfo->{attrs};
+
+    my ($rel_col) = keys %{ $relinfo->{cond} };
+    my $our_col = $relinfo->{cond}->{$rel_col};
+    $modelname = $self->extjs_model_name( $relinfo->{source} );
+    if ($attrs->{is_foreign_key_constraint}
+        && (   $attrs->{accessor} eq 'single'
+            || $attrs->{accessor} eq 'filter' )
+        )
+    {
+        $reltype = 'belongsTo';
+    }
+
+    elsif ( $attrs->{accessor} eq 'single' ) {
+        $reltype = 'hasOne';
+    }
+    elsif ( $attrs->{accessor} eq 'multi' ) {
+        $reltype = 'hasMany';
+    }
+    $rel_col =~ s/^foreign\.//;
+    $our_col =~ s/^self\.//;
+    @updatedField = grep { $_->{model} eq $modelname and $_->{type} eq $reltype } @{$model->{associations}};
+    $field = @updatedField ? $updatedField[0] : { model => $modelname, type => $reltype };
+    $field->{associationKey} = $relation;
+    $field->{primaryKey} = $rel_col;
+    $field->{foreign} = $our_col;
+    push @{$model->{associations}}, $field unless @updatedField;
+  }
+
   make_path($self->path . '/model');
 
   open(my $fh, '>', $self->path . '/model/' . $name . '.js') or croak $!;
-  print $fh "Ext.define('$name', ";
-  warn $model;
-  print $fh $self->json->to_json($model);
-  print $fh ');';
+  print $fh sprintf("Ext.define('%s.model.%s', %s);", $self->js_namespace, $name, $self->json->to_json($model));
   return $model;
 }
 
