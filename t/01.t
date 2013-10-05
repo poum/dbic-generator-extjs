@@ -4,7 +4,7 @@ use warnings;
 use Test::More;
 use Test::Exception;
 
-use Data::Dump qw/dump/;
+use Data::Dumper; 
 
 use FindBin qw($Bin);
 use lib "$Bin/../lib";
@@ -45,8 +45,6 @@ throws_ok { $generator->model('SantaClaus') }
   'non existent model detected';
 
 ok($generator->model('Basic'), 'ExtJS Basic model generation');
-
-diag dump($generator->model('Basic'));
 
 chdir $oldDir;
 
