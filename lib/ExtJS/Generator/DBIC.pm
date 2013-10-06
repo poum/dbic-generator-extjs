@@ -1,4 +1,4 @@
-package DBICx::Generator::ExtJS;
+package ExtJS::Generator::DBIC;
 
 use Moose;
 use namespace::autoclean;
@@ -6,16 +6,17 @@ use JSON::DWIW;
 use Carp;
 use UNIVERSAL::require;
 use File::Path qw/make_path/;
+use ExtJS::Generator::DBIC::TypeTranslator;
 
-# ABSTRACT: DBICx::Generator::ExtJS - ExtJS MVC class generator using DBIx::Class schema
+# ABSTRACT: ExtJS::Generator::DBIC::TypeTranslator - ExtJS MVC class generator using DBIx::Class schema
 
 =head1 SYNOPSYS
 
-  use DBICx::Generator::ExtJS;
+  use ExtJS::Generator::DBIC;
 
-  my $extjs_generator = DBICx::Generator::ExtJS->new(schema_name => 'My::Schema');
+  my $extjs_generator = ExtJS::Generator::DBIC->new(schema_name => 'My::Schema');
 
-  $extjs_generator->make_model();
+  $extjs_generator->models();
 
 =cut
 
@@ -80,7 +81,7 @@ has 'order' => (
 
 =head3 path
 
-The path where the js files can be retrieved / writes
+The path where the js files can be retrieved / wrote
 
 =cut
 has 'path' => (
@@ -89,6 +90,11 @@ has 'path' => (
   default => 'js/app'
 );
 
+=head3 json
+
+JSON converter engine
+
+=cut
 has 'json' => (
   is => 'ro',
   isa => 'JSON::DWIW',
@@ -103,84 +109,15 @@ has 'json' => (
   }
 );
 
-=head3 pierreDeRosette
+=head3 typeTranslator
 
-Return an hashref of all known type ExtJS translation
-(MySQL, PostgreSQL & Oracle for now)
+DBIx::Class ExtJS type translator
 
 =cut
-has 'pierreDeRosette' => (
-  is  => 'ro',
-  isa => 'HashRef',
-  default => sub {
-
-    {
-      #
-      # MySQL types
-      #
-      bigint     => 'int',
-      double     => 'float',
-      decimal    => 'float',
-      float      => 'float',
-      int        => 'int',
-      integer    => 'int',
-      mediumint  => 'int',
-      smallint   => 'int',
-      tinyint    => 'int',
-      char       => 'string',
-      varchar    => 'string',
-      tinyblob   => 'auto',
-      blob       => 'auto',
-      mediumblob => 'auto',
-      longblob   => 'auto',
-      tinytext   => 'string',
-      text       => 'string',
-      longtext   => 'string',
-      mediumtext => 'string',
-      enum       => 'string',
-      set        => 'string',
-      date       => 'date',
-      datetime   => 'date',
-      time       => 'date',
-      timestamp  => 'date',
-      year       => 'date',
-
-      #
-      # PostgreSQL types
-      #
-      numeric             => 'float',
-      'double precision'  => 'float',
-      serial              => 'int',
-      bigserial           => 'int',
-      money               => 'float',
-      character           => 'string',
-      'character varying' => 'string',
-      bytea               => 'auto',
-      interval            => 'float',
-      boolean             => 'boolean',
-      point               => 'float',
-      line                => 'float',
-      lseg                => 'float',
-      box                 => 'float',
-      path                => 'float',
-      polygon             => 'float',
-      circle              => 'float',
-      cidr                => 'string',
-      inet                => 'string',
-      macaddr             => 'string',
-      bit                 => 'int',
-      'bit varying'       => 'int',
-
-      #
-      # Oracle types
-      #
-      number   => 'float',
-      varchar2 => 'string',
-      long     => 'float',
-    };
-  }
+has 'typeTranslator' => (
+	is => 'rw',
+	isa => 'ExtJS::Generator::DBIC::TypeTranslator'
 );
-
 
 # constructor
 #
@@ -198,6 +135,7 @@ sub BUILD {
   $self->schema or croak 'Unable to connect to ' . $self->schema_name;
 
   $self->tables([$self->schema->sources]);
+  $self->typeTranslator(new ExtJS::Generator::DBIC::TypeTranslator());
 
   unless ($self->js_namespace) {
     my $js_namespace = $self->schema_name;
@@ -267,7 +205,7 @@ sub model {
     @updatedField = grep { $_->{name} eq $column } @{$model->{fields}};
     $field = @updatedField ? $updatedField[0] : { name => $column };
   
-    $field->{type} = $self->translateType($info->{data_type});
+    $field->{type} = $self->typeTranslator->translate($info->{data_type});
 
     if ($info->{default_value}) {
       if ($field->{type} eq 'boolean') {
@@ -346,19 +284,6 @@ sub model {
   return $model;
 }
 
-=head3 translateType
-
-Translate the original type in ExtJS corresponding type.
-If this type is unknown, return 'auto'
-
-=cut
-sub translateType {
-  my $self = shift;
-  my $schemaType = shift or croak "Missing schema type to translate !";
-
-  return $self->pierreDeRosette->{$schemaType} || 'auto';
-}
-
 # _getJSON
 # 
 #  get previous 'type' ExtJS file if any with associated full name
@@ -416,7 +341,7 @@ __END__
 
 =item add backup / stop option if the generated file already exists
 
-=item use estjs main file for finding path to file and namespace
+=item use extjs main file for finding path to file and namespace
 
 =item use a config file
 

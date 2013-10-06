@@ -1,6 +1,6 @@
 # NAME
 
-DBICx::Generator::ExtJS - DBICx::Generator::ExtJS - ExtJS MVC class generator using DBIx::Class schema
+ExtJS::Generator::DBIC - ExtJS::Generator::DBIC::TypeTranslator - ExtJS MVC class generator using DBIx::Class schema
 
 # VERSION
 
@@ -8,11 +8,11 @@ version 0.001001
 
 # SYNOPSYS
 
-    use DBICx::Generator::ExtJS;
+    use ExtJS::Generator::DBIC;
 
-    my $extjs_generator = DBICx::Generator::ExtJS->new(schema_name => 'My::Schema');
+    my $extjs_generator = ExtJS::Generator::DBIC->new(schema_name => 'My::Schema');
 
-    $extjs_generator->make_model();
+    $extjs_generator->models();
 
 ## METHODS
 
@@ -38,12 +38,15 @@ Return an hashref of applied order to json extjs generated file
 
 ### path
 
-The path where the js files can be retrieved / writes
+The path where the js files can be retrieved / wrote
 
-### pierreDeRosette
+### json
 
-Return an hashref of all known type ExtJS translation
-(MySQL, PostgreSQL & Oracle for now)
+JSON converter engine
+
+### typeTranslator
+
+DBIx::Class ExtJS type translator
 
 ### models
 
@@ -59,11 +62,6 @@ in a subclass.
 Generate specified ExtJS model (field definition, validation rules, proxy and association). 
 If a javascript model file already exists, all other keys are preserved.
 
-### translateType
-
-Translate the original type in ExtJS corresponding type.
-If this type is unknown, return 'auto'
-
 # TODO
 
 - store / treestore generator
@@ -72,7 +70,7 @@ If this type is unknown, return 'auto'
 - grid / tree generator
 - use md5 (has DBIx::Class::Loader do) to verify the modified parts (compress then order the json file first)
 - add backup / stop option if the generated file already exists
-- use estjs main file for finding path to file and namespace
+- use extjs main file for finding path to file and namespace
 - use a config file
 - search in local directory by default
 
