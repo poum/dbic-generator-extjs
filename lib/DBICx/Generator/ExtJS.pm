@@ -7,7 +7,7 @@ use Carp;
 use UNIVERSAL::require;
 use File::Path qw/make_path/;
 
-# ABSTRACT: DBICx::Generator::ExtJS - ExtJS MVC class generator
+# ABSTRACT: DBICx::Generator::ExtJS - ExtJS MVC class generator using DBIx::Class schema
 
 =head1 SYNOPSYS
 
@@ -24,7 +24,7 @@ use File::Path qw/make_path/;
 
 =head3 schema_name
 
-  give the name of the schema module passed as parameter
+Give the name of the schema module passed as parameter
 
 =cut
 has 'schema_name' => ( 
@@ -35,7 +35,7 @@ has 'schema_name' => (
 
 =head3 js_name
 
-  the javascript file namespace
+The javascript file namespace
 
 =cut
 has 'js_namespace' => (
@@ -45,7 +45,7 @@ has 'js_namespace' => (
 
 =head3 schema
 
-  return the DBIx::Class schema object
+Return the DBIx::Class schema object
 
 =cut
 has 'schema' => ( 
@@ -55,14 +55,14 @@ has 'schema' => (
 
 =head3 tables
 
-  return an array reference of all schema table names
+Return an array reference of all schema table names
 
 =cut
 has 'tables' => (is => 'rw');
 
 =head3 order
 
-  return an hashref of applied order to json extjs generated file
+Return an hashref of applied order to json extjs generated file
 
 =cut
 has 'order' => (
@@ -80,7 +80,7 @@ has 'order' => (
 
 =head3 path
 
-  the path where the js files can be retrieved / writes
+The path where the js files can be retrieved / writes
 
 =cut
 has 'path' => (
@@ -105,8 +105,8 @@ has 'json' => (
 
 =head3 pierreDeRosette
 
-  return an hashref of all known type ExtJS translation
-  (MySQL, PostgreSQL & Oracle for now)
+Return an hashref of all known type ExtJS translation
+(MySQL, PostgreSQL & Oracle for now)
 
 =cut
 has 'pierreDeRosette' => (
@@ -209,7 +209,7 @@ sub BUILD {
 
 =head3 models
 
-  generate all ExtJS models found in the DBIx::Class Schema
+Generate all ExtJS models found in the DBIx::Class Schema
 
 =cut
 sub models {
@@ -232,7 +232,8 @@ sub extjs_model_name {
 
 =head3 model
 
-  generate specified ExtJS model
+Generate specified ExtJS model (field definition, validation rules, proxy and association). 
+If a javascript model file already exists, all other keys are preserved.
 
 =cut
 sub model {
@@ -281,7 +282,7 @@ sub model {
     # the presence validation already exists ?
     @updatedField = grep { $_->{field} eq $column and $_->{type} eq 'presence' } @{$model->{validations}};
     if ($info->{is_nullable}) {
-      # supress presence validation if the field is now nullable
+      # suppress presence validation if the field is now nullable
       $updatedField[0] = undef if @updatedField;
     }
     else {
@@ -347,8 +348,8 @@ sub model {
 
 =head3 translateType
 
-  translate the original type in ExtJS corresponding type.
-  if this type is unknown, return 'auto'
+Translate the original type in ExtJS corresponding type.
+If this type is unknown, return 'auto'
 
 =cut
 sub translateType {
@@ -396,3 +397,29 @@ sub _getJSON {
 __PACKAGE__->meta->make_immutable;
 
 1;
+
+__END__
+
+=head1 TODO
+
+=over 4
+
+=item store / treestore generator
+
+=item controller generator (using template)
+
+=item form generator (combo for associated data)
+
+=item grid / tree generator
+
+=item use md5 (has DBIx::Class::Loader do) to verify the modified parts (compress then order the json file first)
+
+=item add backup / stop option if the generated file already exists
+
+=item use estjs main file for finding path to file and namespace
+
+=item use a config file
+
+=item search in local directory by default
+
+=back

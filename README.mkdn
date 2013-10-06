@@ -1,0 +1,89 @@
+# NAME
+
+DBICx::Generator::ExtJS - DBICx::Generator::ExtJS - ExtJS MVC class generator using DBIx::Class schema
+
+# VERSION
+
+version 0.001001
+
+# SYNOPSYS
+
+    use DBICx::Generator::ExtJS;
+
+    my $extjs_generator = DBICx::Generator::ExtJS->new(schema_name => 'My::Schema');
+
+    $extjs_generator->make_model();
+
+## METHODS
+
+### schema\_name
+
+Give the name of the schema module passed as parameter
+
+### js\_name
+
+The javascript file namespace
+
+### schema
+
+Return the DBIx::Class schema object
+
+### tables
+
+Return an array reference of all schema table names
+
+### order
+
+Return an hashref of applied order to json extjs generated file
+
+### path
+
+The path where the js files can be retrieved / writes
+
+### pierreDeRosette
+
+Return an hashref of all known type ExtJS translation
+(MySQL, PostgreSQL & Oracle for now)
+
+### models
+
+Generate all ExtJS models found in the DBIx::Class Schema
+
+### extjs\_model\_name
+
+This method returns the ExtJS model name for a table and can be overridden
+in a subclass.
+
+### model
+
+Generate specified ExtJS model (field definition, validation rules, proxy and association). 
+If a javascript model file already exists, all other keys are preserved.
+
+### translateType
+
+Translate the original type in ExtJS corresponding type.
+If this type is unknown, return 'auto'
+
+# TODO
+
+- store / treestore generator
+- controller generator (using template)
+- form generator (combo for associated data)
+- grid / tree generator
+- use md5 (has DBIx::Class::Loader do) to verify the modified parts (compress then order the json file first)
+- add backup / stop option if the generated file already exists
+- use estjs main file for finding path to file and namespace
+- use a config file
+- search in local directory by default
+
+# AUTHORS
+
+- Alexander Hartmaier <abraxxa@cpan.org>
+- Philippe Poumaroux  <poum@cpan.org>
+
+# COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2013 by Alexander Hartmaier.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
