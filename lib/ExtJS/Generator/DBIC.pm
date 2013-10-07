@@ -173,6 +173,9 @@ sub extjs_model_name {
 Generate specified ExtJS model (field definition, validation rules, proxy and association). 
 If a javascript model file already exists, all other keys are preserved.
 
+If a nullable boolean field is encountered, the corresponding presence validation rule is'nt
+generated to avoid ExtJS transform the null values in false ones.
+
 =cut
 sub model {
   my $self = shift;
@@ -346,5 +349,9 @@ __END__
 =item use a config file
 
 =item search in local directory by default
+
+=item parse json with js comments
+
+=item fully restore previous json with just adding modfications
 
 =back
