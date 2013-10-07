@@ -20,6 +20,11 @@ use ExtJS::Generator::DBIC::TypeTranslator;
 
 =cut
 
+=head2 DESCRIPTION
+
+ExtJS::Generator::DBIC try to reuse all the work already done in Perl with DBIx::Class or in SQL with DBIx::Class::Loader 
+to (re)generate corresponding ExtJS MVC javascript files. For now, it produces the model files with typed fields, validations rules,
+and associations. The DBIx::Class::Schema namespace is reused.
 
 =head2 METHODS
 
@@ -129,7 +134,6 @@ sub BUILD {
 
   $self->schema_name->require() or croak 'Unable to found/load ' . $self->schema_name . " ($!)";
   
-  #eval '$self->schema(' . $self->schema_name . '->connect());';
   $self->schema($self->schema_name->connect());
 
   $self->schema or croak 'Unable to connect to ' . $self->schema_name;
@@ -340,7 +344,7 @@ __END__
 
 =item grid / tree generator
 
-=item use md5 (has DBIx::Class::Loader do) to verify the modified parts (compress then order the json file first)
+=item use md5 (as DBIx::Class::Loader do) to verify the modified parts (compress then order the json file first)
 
 =item add backup / stop option if the generated file already exists
 
@@ -355,5 +359,15 @@ __END__
 =item fully restore previous json with just adding modfications
 
 =item add test for rewriting existing model files 
+
+=item add a script like the DBIx::Class one
+
+=item make a TypeTranslator for each supported Database
+
+=item SenchaCmd integration ?
+
+=item Add file and script to configure/produce the jsduck documentation
+
+=item Add inclusion, exclusion and format validation rules
 
 =back
