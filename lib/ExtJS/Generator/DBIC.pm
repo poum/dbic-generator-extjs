@@ -360,7 +360,7 @@ __END__
 
 =item add test for rewriting existing model files 
 
-=item add a script like the DBIx::Class one
+=item add a script like the DBIx::Class::Loader one
 
 =item make a TypeTranslator for each supported Database
 
@@ -369,5 +369,7 @@ __END__
 =item Add file and script to configure/produce the jsduck documentation
 
 =item Add inclusion, exclusion and format validation rules
+
+=item Extract Model generator in ExtJS::Generator::DBIC::Model (and Form, Grid, Tree, Controller, Store, etc.)
 
 =back
