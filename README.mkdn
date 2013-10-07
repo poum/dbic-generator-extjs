@@ -85,11 +85,12 @@ generated to avoid ExtJS transform the null values in false ones.
 - parse json with js comments
 - fully restore previous json with just adding modfications
 - add test for rewriting existing model files 
-- add a script like the DBIx::Class one
+- add a script like the DBIx::Class::Loader one
 - make a TypeTranslator for each supported Database
 - SenchaCmd integration ?
 - Add file and script to configure/produce the jsduck documentation
 - Add inclusion, exclusion and format validation rules
+- Extract Model generator in ExtJS::Generator::DBIC::Model (and Form, Grid, Tree, Controller, Store, etc.)
 
 # AUTHORS
 
