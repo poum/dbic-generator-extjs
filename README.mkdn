@@ -62,6 +62,9 @@ in a subclass.
 Generate specified ExtJS model (field definition, validation rules, proxy and association). 
 If a javascript model file already exists, all other keys are preserved.
 
+If a nullable boolean field is encountered, the corresponding presence validation rule is'nt
+generated to avoid ExtJS transform the null values in false ones.
+
 # TODO
 
 - store / treestore generator
@@ -73,6 +76,9 @@ If a javascript model file already exists, all other keys are preserved.
 - use extjs main file for finding path to file and namespace
 - use a config file
 - search in local directory by default
+- parse json with js comments
+- fully restore previous json with just adding modfications
+- add test for rewriting existing model files 
 
 # AUTHORS
 

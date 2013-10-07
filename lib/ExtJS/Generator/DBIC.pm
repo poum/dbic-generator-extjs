@@ -354,4 +354,6 @@ __END__
 
 =item fully restore previous json with just adding modfications
 
+=item add test for rewriting existing model files 
+
 =back
