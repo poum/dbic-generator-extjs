@@ -14,6 +14,12 @@ version 0.001001
 
     $extjs_generator->models();
 
+## DESCRIPTION
+
+ExtJS::Generator::DBIC try to reuse all the work already done in Perl with DBIx::Class or in SQL with DBIx::Class::Loader 
+to (re)generate corresponding ExtJS MVC javascript files. For now, it produces the model files with typed fields, validations rules,
+and associations. The DBIx::Class::Schema namespace is reused.
+
 ## METHODS
 
 ### schema\_name
@@ -71,7 +77,7 @@ generated to avoid ExtJS transform the null values in false ones.
 - controller generator (using template)
 - form generator (combo for associated data)
 - grid / tree generator
-- use md5 (has DBIx::Class::Loader do) to verify the modified parts (compress then order the json file first)
+- use md5 (as DBIx::Class::Loader do) to verify the modified parts (compress then order the json file first)
 - add backup / stop option if the generated file already exists
 - use extjs main file for finding path to file and namespace
 - use a config file
@@ -79,6 +85,11 @@ generated to avoid ExtJS transform the null values in false ones.
 - parse json with js comments
 - fully restore previous json with just adding modfications
 - add test for rewriting existing model files 
+- add a script like the DBIx::Class one
+- make a TypeTranslator for each supported Database
+- SenchaCmd integration ?
+- Add file and script to configure/produce the jsduck documentation
+- Add inclusion, exclusion and format validation rules
 
 # AUTHORS
 
