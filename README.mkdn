@@ -54,14 +54,14 @@ JSON converter engine
 
 DBIx::Class ExtJS type translator
 
-### models
-
-Generate all ExtJS models found in the DBIx::Class Schema
-
 ### extjs\_model\_name
 
 This method returns the ExtJS model name for a table and can be overridden
 in a subclass.
+
+### models
+
+Generate all ExtJS models found in the DBIx::Class Schema
 
 ### model
 
@@ -71,9 +71,19 @@ If a javascript model file already exists, all other keys are preserved.
 If a nullable boolean field is encountered, the corresponding presence validation rule is'nt
 generated to avoid ExtJS transform the null values in false ones.
 
+### stores
+
+Generate ExtJS stores for all models found in the DBIx::Class Schema
+
+### store
+
+Generate specified ExtJS store (model and proxy). 
+If a javascript store file already exists, all other keys are preserved.
+
 # TODO
 
-- store / treestore generator
+- models, stores & mvc global generation function
+- treestore generator
 - controller generator (using template)
 - form generator (combo for associated data)
 - grid / tree generator

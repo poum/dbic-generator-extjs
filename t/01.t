@@ -47,6 +47,21 @@ throws_ok { $generator->model('SantaClaus') }
 ok($generator->model('Basic'), 'ExtJS Basic model generation');
 ok($generator->model('Another'), 'ExtJS Another model update');
 
+#ok($generator->models(), 'Extjs model global generation');
+
+throws_ok { $generator->store() }
+  qr/Store name required !/,
+	'missing store parameter detected';
+
+throws_ok { $generator->store('SantaClaus') }
+	qr/SantaClaus does'nt exist !/,
+	'non existent model detected';
+
+ok($generator->store('Basic'), 'ExtJS Basic store generation');
+ok($generator->store('Another'), 'ExtJS Another store generation');
+
+#ok($generator->stores(), 'ExtJS store global generation');
+
 chdir $oldDir;
 
 done_testing;

@@ -149,16 +149,6 @@ sub BUILD {
   }
 }
 
-=head3 models
-
-Generate all ExtJS models found in the DBIx::Class Schema
-
-=cut
-sub models {
-  my $self = shift;
-  $self->model($_) foreach @{$self->tables()};
-}
-
 =head3 extjs_model_name
 
 This method returns the ExtJS model name for a table and can be overridden
@@ -170,6 +160,20 @@ sub extjs_model_name {
     my ( $self, $tablename ) = @_;
     $tablename = $tablename =~ m/^(?:\w+::)* (\w+)$/x ? $1 : $tablename;
     return ucfirst($tablename);
+}
+
+=head3 models
+
+Generate all ExtJS models found in the DBIx::Class Schema
+
+=cut
+sub models {
+  my $self = shift; 
+  my @models = ();
+
+  push @models, $self->model($_) foreach @{$self->tables};
+
+  return @models;
 }
 
 =head3 model
@@ -185,7 +189,7 @@ sub model {
   my $self = shift;
   my $name = shift or croak "Model name required ! (did'nt you mind 'models' ?)";
 
-  croak "$name does'nt exist !" unless grep /^$name$/, @{$self->tables()};
+  croak "$name does'nt exist !" unless grep /^$name$/, @{$self->tables};
 
   my ($model, $model_name) = $self->_getJSON($name, 'model');
   $model->{extend} = 'Ext.data.Model' unless exists $model->{extend};
@@ -288,7 +292,55 @@ sub model {
 
   open(my $fh, '>', $self->path . '/model/' . $name . '.js') or croak $!;
   print $fh sprintf("Ext.define('%s.model.%s', %s);", $self->js_namespace, $name, $self->json->to_json($model));
+  close $fh;
+
   return $model;
+}
+
+=head3 stores
+
+Generate ExtJS stores for all models found in the DBIx::Class Schema
+
+=cut
+sub stores {
+  my $self = shift;
+  my @stores = ();
+
+  push @stores, $self->store($_) foreach @{$self->tables()};
+
+  return @stores;
+}
+
+=head3 store
+
+Generate specified ExtJS store (model and proxy). 
+If a javascript store file already exists, all other keys are preserved.
+
+=cut
+sub store {
+  my $self = shift;
+  my $name = shift or croak "Store name required ! (did'nt you mind 'stores' ?)";
+
+  croak "$name does'nt exist !" unless grep /^$name$/, @{$self->tables};
+
+  my ($store, $store_name) = $self->_getJSON($name, 'store');
+  $store->{extend} = 'Ext.data.Store' unless exists $store->{extend};
+  $store->{model} = join '.', $self->js_namespace, 'model', $name unless exists $store->{model};
+  unless (exists $store->{proxy}) {
+    my $url = '/' . lc $name . '/';
+    $store->{proxy} = {
+      type => 'ajax',
+      url  =>  '/' . lc $name . '/list.json'
+    };
+  }
+
+  make_path($self->path . '/store');
+
+  open(my $fh, '>', $self->path . '/store/' . $name . '.js') or croak $!;
+  print $fh sprintf("Ext.define('%s.store.%ss', %s);", $self->js_namespace, $name, $self->json->to_json($store));
+  close $fh;
+
+  return $store;
 }
 
 # _getJSON
@@ -336,7 +388,9 @@ __END__
 
 =over 4
 
-=item store / treestore generator
+=item models, stores & mvc global generation function
+
+=item treestore generator
 
 =item controller generator (using template)
 
