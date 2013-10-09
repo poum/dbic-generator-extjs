@@ -3,6 +3,7 @@ use warnings;
 
 use Test::More;
 use Test::Exception;
+use Test::Files;
 
 use Data::Dumper; 
 
@@ -45,7 +46,7 @@ throws_ok { $generator->model('SantaClaus') }
   'non existent model detected';
 
 ok($generator->model('Basic'), 'ExtJS Basic model generation');
-ok($generator->model('Basic'), 'ExtJS Basic model regeneration');
+compare_ok('js/app/model/Basic.js', '01-model-Basic.js', 'Generated ExtJS Basic model ok');
 
 ok($generator->model('Another'), 'ExtJS Another model update');
 
@@ -60,8 +61,10 @@ throws_ok { $generator->store('SantaClaus') }
 	'non existent model detected';
 
 ok($generator->store('Basic'), 'ExtJS Basic store generation');
+compare_ok('js/app/store/Basic.js', '01-store-Basic.js', 'Generated ExtJS Basic store ok');
+
 ok($generator->store('Another'), 'ExtJS Another store generation');
-ok(1 == 0);
+
 #ok($generator->stores(), 'ExtJS store global generation');
 
 chdir $oldDir;
