@@ -181,15 +181,15 @@ sub models {
 Generate specified ExtJS model (field definition, validation rules, proxy and association). 
 If a javascript model file already exists, all other keys are preserved.
 
-If a nullable boolean field is encountered, the corresponding presence validation rule is'nt
+If a nullable boolean field is encountered, the corresponding presence validation rule isn't
 generated to avoid ExtJS transform the null values in false ones.
 
 =cut
 sub model {
   my $self = shift;
-  my $name = shift or croak "Model name required ! (did'nt you mind 'models' ?)";
+  my $name = shift or croak "Model name required ! (didn't you mind 'models' ?)";
 
-  croak "$name does'nt exist !" unless grep /^$name$/, @{$self->tables};
+  croak "$name doesn't exist !" unless grep /^$name$/, @{$self->tables};
 
   my ($model, $model_name) = $self->_getJSON($name, 'model');
   $model->{extend} = 'Ext.data.Model' unless exists $model->{extend};
@@ -235,7 +235,7 @@ sub model {
       $updatedField[0] = undef if @updatedField;
     }
     else {
-      # add presence validation if it does'nt already exist
+      # add presence validation if it doesn't already exist
       push @{$model->{validations}}, { type => 'presence', field => $column } unless @updatedField;
     }
 
@@ -319,9 +319,9 @@ If a javascript store file already exists, all other keys are preserved.
 =cut
 sub store {
   my $self = shift;
-  my $name = shift or croak "Store name required ! (did'nt you mind 'stores' ?)";
+  my $name = shift or croak "Store name required ! (didn't you mind 'stores' ?)";
 
-  croak "$name does'nt exist !" unless grep /^$name$/, @{$self->tables};
+  croak "$name doesn't exist !" unless grep /^$name$/, @{$self->tables};
 
   my ($store, $store_name) = $self->_getJSON($name, 'store');
   $store->{extend} = 'Ext.data.Store' unless exists $store->{extend};

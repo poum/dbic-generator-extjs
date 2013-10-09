@@ -41,10 +41,12 @@ throws_ok { $generator->model() }
   'missing model parameter detected';
 
 throws_ok { $generator->model('SantaClaus') }
-  qr/SantaClaus does'nt exist !/,
+  qr/SantaClaus doesn't exist !/,
   'non existent model detected';
 
 ok($generator->model('Basic'), 'ExtJS Basic model generation');
+ok($generator->model('Basic'), 'ExtJS Basic model regeneration');
+
 ok($generator->model('Another'), 'ExtJS Another model update');
 
 #ok($generator->models(), 'Extjs model global generation');
@@ -54,12 +56,12 @@ throws_ok { $generator->store() }
 	'missing store parameter detected';
 
 throws_ok { $generator->store('SantaClaus') }
-	qr/SantaClaus does'nt exist !/,
+	qr/SantaClaus doesn't exist !/,
 	'non existent model detected';
 
 ok($generator->store('Basic'), 'ExtJS Basic store generation');
 ok($generator->store('Another'), 'ExtJS Another store generation');
-
+ok(1 == 0);
 #ok($generator->stores(), 'ExtJS store global generation');
 
 chdir $oldDir;
