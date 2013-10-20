@@ -8,7 +8,7 @@ use UNIVERSAL::require;
 use ExtJS::Generator::DBIC::JsFile;
 use ExtJS::Generator::DBIC::TypeTranslator;
 
-#ABSTRACT: ExtJS::Generator::DBIC - ExtJS MVC class generator using DBIx::Class schema
+#ABSTRACT: ExtJS MVC class generator using DBIx::Class schema
 
 =head1 SYNOPSYS
 
@@ -18,20 +18,20 @@ use ExtJS::Generator::DBIC::TypeTranslator;
 
   $extjs_generator->model('Basic');
 
-  # all models in one shot
+  # all models in one shot
   $extjs_generator->models();
 
   $extjs_generator->store('Another');
 
-  # all stores in one shot
+  # all stores in one shot
   $extjs_generator->stores();
 
-  # all ExtJS artifacts in one shot (models & stores)
+  # all ExtJS artifacts in one shot (models & stores)
   $extjs_generator->mvc();
 
 =cut
 
-=head2 DESCRIPTION
+=head1 DESCRIPTION
 
 ExtJS::Generator::DBIC try to reuse all the work already done in Perl with DBIx::Class or in SQL with DBIx::Class::Loader 
 to (re)generate corresponding ExtJS MVC javascript files. For now, it produces :
@@ -49,7 +49,6 @@ files are only looked for in this location. Otherwise try <path>/<type>/<file>, 
 See L<ExtJS::Generator::DBIC::JsFile>.
 
 =cut
-
 
 has 'schema_name' => ( 
   is => 'ro',
@@ -116,7 +115,7 @@ has 'typeTranslator' => (
 	isa => 'ExtJS::Generator::DBIC::TypeTranslator'
 );
 
-=head2 METHODS
+=head1 METHODS
 
 =head2 new
 
@@ -177,13 +176,25 @@ sub extjs_model_name {
     return ucfirst($tablename);
 }
 
-=head3 model
+=head2 model
 
 Generate specified ExtJS model (field definition, validation rules, proxy and association). 
 If a javascript model file already exists, all other keys are preserved.
 
 If a nullable boolean field is encountered, the corresponding presence validation rule isn't
 generated to avoid ExtJS transform the null values into false ones.
+
+=head3 parameters
+
+=over 4
+
+=item model name for which the ExtJS model file should be generated. B<Mandatory>.
+
+=back
+
+=head3 return
+
+ref to model Perl structure
 
 =cut
 sub model {
@@ -300,9 +311,13 @@ sub model {
   return $model;
 }
 
-=head3 models
+=head2 models
 
 Generate all ExtJS models found in the DBIx::Class Schema
+
+=head3 return
+
+List of model Perl structure references
 
 =cut
 sub models {
@@ -314,10 +329,22 @@ sub models {
   return @models;
 }
 
-=head3 store
+=head2 store
 
 Generate specified ExtJS store (model and proxy). 
 If a javascript store file already exists, all other keys are preserved.
+
+=head3 parameters
+
+=over 4
+
+=item model name for which the ExtJS store file should be generated. B<Mandatory>.
+
+=back
+
+=head3 return
+
+ref to store Perl structure
 
 =cut
 sub store {
@@ -346,9 +373,13 @@ sub store {
   return $store;
 }
 
-=head3 stores
+=head2 stores
 
 Generate ExtJS stores for all models found in the DBIx::Class Schema
+
+=head3 return
+
+List of store Perl structure references
 
 =cut
 sub stores {
@@ -360,15 +391,19 @@ sub stores {
   return @stores;
 }
 
-=head3 mvc
+=head2 mvc
 
 Generate all ExtJS artifacts for all models found in the DBIx::Class Schema
+
+=head3 return
+
+List of Perl structure references
 
 =cut
 sub mvc {
     my $self = shift;
-    $self->models();
-    $self->stores();
+
+    return ($self->models(), $self->stores());
 }
 
 __PACKAGE__->meta->make_immutable;

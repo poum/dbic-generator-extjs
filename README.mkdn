@@ -1,10 +1,22 @@
 # NAME
 
-ExtJS::Generator::DBIC - ExtJS::Generator::DBIC - ExtJS MVC class generator using DBIx::Class schema
+ExtJS::Generator::DBIC - ExtJS MVC class generator using DBIx::Class schema
 
 # VERSION
 
 version 0.001001
+
+# DESCRIPTION
+
+ExtJS::Generator::DBIC try to reuse all the work already done in Perl with DBIx::Class or in SQL with DBIx::Class::Loader 
+to (re)generate corresponding ExtJS MVC javascript files. For now, it produces :
+
+- __the model files__ : with typed fields, validations rules, and associations. The DBIx::Class::Schema namespace is reused.
+- __the store files__ : with model and proxy
+
+It handles the already existings ExtJS javascript files, trying to preserve comment and non JSON parts. If an absolute or relative path is given,
+files are only looked for in this location. Otherwise try <path>/<type>/<file>, <path>/<file>, ./<type>/<file> and finally ./<file>. 
+See [ExtJS::Generator::DBIC::JsFile](http://search.cpan.org/perldoc?ExtJS::Generator::DBIC::JsFile).
 
 # SYNOPSYS
 
@@ -25,19 +37,7 @@ version 0.001001
     # all ExtJS artifacts in one shot (models & stores)
     $extjs_generator->mvc();
 
-## DESCRIPTION
-
-ExtJS::Generator::DBIC try to reuse all the work already done in Perl with DBIx::Class or in SQL with DBIx::Class::Loader 
-to (re)generate corresponding ExtJS MVC javascript files. For now, it produces :
-
-- __the model files__ : with typed fields, validations rules, and associations. The DBIx::Class::Schema namespace is reused.
-- __the store files__ : with model and proxy
-
-It handles the already existings ExtJS javascript files, trying to preserve comment and non JSON parts. If an absolute or relative path is given,
-files are only looked for in this location. Otherwise try <path>/<type>/<file>, <path>/<file>, ./<type>/<file> and finally ./<file>. 
-See [ExtJS::Generator::DBIC::JsFile](http://search.cpan.org/perldoc?ExtJS::Generator::DBIC::JsFile).
-
-## METHODS
+# METHODS
 
 ## new
 
@@ -55,7 +55,7 @@ See [ExtJS::Generator::DBIC::JsFile](http://search.cpan.org/perldoc?ExtJS::Gener
 - __path__ : the path where javacript files will be looked for / writed. './js/app' by default.
 - __backup__ : flag to generate a backup before modifying an existing ExtJS javascript file (true by default).
 
-### model
+## model
 
 Generate specified ExtJS model (field definition, validation rules, proxy and association). 
 If a javascript model file already exists, all other keys are preserved.
@@ -63,22 +63,50 @@ If a javascript model file already exists, all other keys are preserved.
 If a nullable boolean field is encountered, the corresponding presence validation rule isn't
 generated to avoid ExtJS transform the null values into false ones.
 
-### models
+### parameters
+
+- model name for which the ExtJS model file should be generated. __Mandatory__.
+
+### return
+
+ref to model Perl structure
+
+## models
 
 Generate all ExtJS models found in the DBIx::Class Schema
 
-### store
+### return
+
+List of model Perl structure references
+
+## store
 
 Generate specified ExtJS store (model and proxy). 
 If a javascript store file already exists, all other keys are preserved.
 
-### stores
+### parameters
+
+- model name for which the ExtJS store file should be generated. __Mandatory__.
+
+### return
+
+ref to store Perl structure
+
+## stores
 
 Generate ExtJS stores for all models found in the DBIx::Class Schema
 
-### mvc
+### return
+
+List of store Perl structure references
+
+## mvc
 
 Generate all ExtJS artifacts for all models found in the DBIx::Class Schema
+
+### return
+
+List of Perl structure references
 
 # TODO
 
