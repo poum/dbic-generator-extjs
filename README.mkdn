@@ -128,6 +128,9 @@ List of Perl structure references
 - Hide JSON::DWIW in JsFile.pm
 - Factorize model & store and models & stores
 - Allow adding a generator with no need to modify DBIC.pm
+- add parameters to not generate validation or association in model method
+- add parameter to specify proxy values in model & store
+- add parameter to change extend value in mode & store
 
 # AUTHORS
 
