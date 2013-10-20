@@ -34,54 +34,42 @@ use ExtJS::Generator::DBIC::TypeTranslator;
 =head2 DESCRIPTION
 
 ExtJS::Generator::DBIC try to reuse all the work already done in Perl with DBIx::Class or in SQL with DBIx::Class::Loader 
-to (re)generate corresponding ExtJS MVC javascript files. For now, it produces the model files with typed fields, validations rules,
-and associations. The DBIx::Class::Schema namespace is reused.
+to (re)generate corresponding ExtJS MVC javascript files. For now, it produces :
 
-=head2 METHODS
+=over 4
 
-=head3 schema_name
+=item B<the model files> : with typed fields, validations rules, and associations. The DBIx::Class::Schema namespace is reused.
 
-Give the name of the schema module passed as parameter
+=item B<the store files> : with model and proxy
+
+=back
+
+It handles the already existings ExtJS javascript files, trying to preserve comment and non JSON parts. If an absolute or relative path is given,
+files are only looked for in this location. Otherwise try <path>/<type>/<file>, <path>/<file>, ./<type>/<file> and finally ./<file>. 
+See L<ExtJS::Generator::DBIC::JsFile>.
 
 =cut
+
+
 has 'schema_name' => ( 
   is => 'ro',
   isa => 'Str',
   required => 1
 );
 
-=head3 js_name
-
-The javascript file namespace
-
-=cut
 has 'js_namespace' => (
   is => 'rw',
   isa => 'Str'
 );
 
-=head3 schema
-
-Return the DBIx::Class schema object
-
-=cut
 has 'schema' => ( 
   is => 'rw',
   isa => 'DBIx::Class::Schema'
 );
 
-=head3 tables
-
-Return an array reference of all schema table names
-
-=cut
 has 'tables' => (is => 'rw');
 
-=head3 order
-
-Return an hashref of applied order to json extjs generated file
-
-=cut
+# not used for now ... TODO
 has 'order' => (
   is => 'ro',
   isa => 'HashRef',
@@ -95,34 +83,19 @@ has 'order' => (
   }
 );
 
-=head3 path
-
-The path where the js files can be retrieved / wrote
-
-=cut
 has 'path' => (
   is => 'rw',
   isa => 'Str',
   default => 'js/app'
 );
 
-=head3 backup
-
-Flag to make a backup each time an existing js file already exists.
-True by default
-
-=cut
 has 'backup' => (
     is => 'ro',
     isa => 'Bool',
     default => 1
 );
 
-=head3 json
-
-JSON converter engine
-
-=cut
+# TODO : Better in JsFile
 has 'json' => (
   is => 'ro',
   isa => 'JSON::DWIW',
@@ -137,18 +110,39 @@ has 'json' => (
   }
 );
 
-=head3 typeTranslator
-
-DBIx::Class ExtJS type translator
-
-=cut
+# TODO : maybe in specific generator ...
 has 'typeTranslator' => (
 	is => 'rw',
 	isa => 'ExtJS::Generator::DBIC::TypeTranslator'
 );
 
-# constructor
-#
+=head2 METHODS
+
+=head2 new
+
+  my$ generator = ExtJS::Generator::DBIC->new(
+    schema_name => 'My::Schema',
+    js_namespace => 'My.App',
+    path => 'public/js/app',
+    backup => 1,
+  );
+
+=head3 parameters
+
+=over 4
+
+=item B<schema_name> : name of the DBIx::Schema from which the files are to be generated. B<Mandatory>. Should be in @INC. 
+
+=item B<js_namespace> : the JavaScript namespace to use. If not speficied, use schema_name ('My::Extra::Schema' produce 'My.Extra').
+
+=item B<path> : the path where javacript files will be looked for / writed. './js/app' by default.
+
+=item B<backup> : flag to generate a backup before modifying an existing ExtJS javascript file (true by default).
+
+=back
+
+=cut 
+
 # load/store the schema using the name given as parameter
 # and initialize the 'tables' array ref 
 # create a javascript namespace if necessary
@@ -172,31 +166,15 @@ sub BUILD {
   }
 }
 
-=head3 extjs_model_name
+# extjs_model_name
 
-This method returns the ExtJS model name for a table and can be overridden
-in a subclass.
-
-=cut
+#This method returns the ExtJS model name for a table and can be overridden
+#in a subclass.
 
 sub extjs_model_name {
     my ( $self, $tablename ) = @_;
     $tablename = $tablename =~ m/^(?:\w+::)* (\w+)$/x ? $1 : $tablename;
     return ucfirst($tablename);
-}
-
-=head3 models
-
-Generate all ExtJS models found in the DBIx::Class Schema
-
-=cut
-sub models {
-  my $self = shift; 
-  my @models = ();
-
-  push @models, $self->model($_) foreach @{$self->tables};
-
-  return @models;
 }
 
 =head3 model
@@ -322,6 +300,20 @@ sub model {
   return $model;
 }
 
+=head3 models
+
+Generate all ExtJS models found in the DBIx::Class Schema
+
+=cut
+sub models {
+  my $self = shift; 
+  my @models = ();
+
+  push @models, $self->model($_) foreach @{$self->tables};
+
+  return @models;
+}
+
 =head3 store
 
 Generate specified ExtJS store (model and proxy). 
@@ -417,6 +409,12 @@ __END__
 
 =item Add inclusion, exclusion and format validation rules
 
-=item Extract Model generator in ExtJS::Generator::DBIC::Model (and Form, Grid, Tree, Controller, Store, etc.)
+=item Extract Model generator in ExtJS::Generator::DBIC::Engine::Model (and Form, Grid, Tree, Controller, Store, etc.)
+
+=item Hide JSON::DWIW in JsFile.pm
+
+=item Factorize model & store and models & stores
+
+=item Allow adding a generator with no need to modify DBIC.pm
 
 =back

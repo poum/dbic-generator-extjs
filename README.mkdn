@@ -28,56 +28,32 @@ version 0.001001
 ## DESCRIPTION
 
 ExtJS::Generator::DBIC try to reuse all the work already done in Perl with DBIx::Class or in SQL with DBIx::Class::Loader 
-to (re)generate corresponding ExtJS MVC javascript files. For now, it produces the model files with typed fields, validations rules,
-and associations. The DBIx::Class::Schema namespace is reused.
+to (re)generate corresponding ExtJS MVC javascript files. For now, it produces :
+
+- __the model files__ : with typed fields, validations rules, and associations. The DBIx::Class::Schema namespace is reused.
+- __the store files__ : with model and proxy
+
+It handles the already existings ExtJS javascript files, trying to preserve comment and non JSON parts. If an absolute or relative path is given,
+files are only looked for in this location. Otherwise try <path>/<type>/<file>, <path>/<file>, ./<type>/<file> and finally ./<file>. 
+See [ExtJS::Generator::DBIC::JsFile](http://search.cpan.org/perldoc?ExtJS::Generator::DBIC::JsFile).
 
 ## METHODS
 
-### schema\_name
+## new
 
-Give the name of the schema module passed as parameter
+    my$ generator = ExtJS::Generator::DBIC->new(
+      schema_name => 'My::Schema',
+      js_namespace => 'My.App',
+      path => 'public/js/app',
+      backup => 1,
+    );
 
-### js\_name
+### parameters
 
-The javascript file namespace
-
-### schema
-
-Return the DBIx::Class schema object
-
-### tables
-
-Return an array reference of all schema table names
-
-### order
-
-Return an hashref of applied order to json extjs generated file
-
-### path
-
-The path where the js files can be retrieved / wrote
-
-### backup
-
-Flag to make a backup each time an existing js file already exists.
-True by default
-
-### json
-
-JSON converter engine
-
-### typeTranslator
-
-DBIx::Class ExtJS type translator
-
-### extjs\_model\_name
-
-This method returns the ExtJS model name for a table and can be overridden
-in a subclass.
-
-### models
-
-Generate all ExtJS models found in the DBIx::Class Schema
+- __schema\_name__ : name of the DBIx::Schema from which the files are to be generated. __Mandatory__. Should be in @INC. 
+- __js\_namespace__ : the JavaScript namespace to use. If not speficied, use schema\_name ('My::Extra::Schema' produce 'My.Extra').
+- __path__ : the path where javacript files will be looked for / writed. './js/app' by default.
+- __backup__ : flag to generate a backup before modifying an existing ExtJS javascript file (true by default).
 
 ### model
 
@@ -86,6 +62,10 @@ If a javascript model file already exists, all other keys are preserved.
 
 If a nullable boolean field is encountered, the corresponding presence validation rule isn't
 generated to avoid ExtJS transform the null values into false ones.
+
+### models
+
+Generate all ExtJS models found in the DBIx::Class Schema
 
 ### store
 
@@ -116,7 +96,10 @@ Generate all ExtJS artifacts for all models found in the DBIx::Class Schema
 - SenchaCmd integration ?
 - Add file and script to configure/produce the jsduck documentation
 - Add inclusion, exclusion and format validation rules
-- Extract Model generator in ExtJS::Generator::DBIC::Model (and Form, Grid, Tree, Controller, Store, etc.)
+- Extract Model generator in ExtJS::Generator::DBIC::Engine::Model (and Form, Grid, Tree, Controller, Store, etc.)
+- Hide JSON::DWIW in JsFile.pm
+- Factorize model & store and models & stores
+- Allow adding a generator with no need to modify DBIC.pm
 
 # AUTHORS
 
