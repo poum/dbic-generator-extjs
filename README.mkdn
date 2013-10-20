@@ -15,7 +15,7 @@ to (re)generate corresponding ExtJS MVC javascript files. For now, it produces :
 - __the store files__ : with model and proxy
 
 It handles the already existings ExtJS javascript files, trying to preserve comment and non JSON parts. If an absolute or relative path is given,
-files are only looked for in this location. Otherwise try <path>/<type>/<file>, <path>/<file>, ./<type>/<file> and finally ./<file>. 
+files are only looked for in this location. Otherwise try 'path'/'type'/'file', 'path'/'file', ./'type'/'file' and finally ./'file'. 
 See [ExtJS::Generator::DBIC::JsFile](http://search.cpan.org/perldoc?ExtJS::Generator::DBIC::JsFile).
 
 # SYNOPSYS
@@ -26,15 +26,15 @@ See [ExtJS::Generator::DBIC::JsFile](http://search.cpan.org/perldoc?ExtJS::Gener
 
     $extjs_generator->model('Basic');
 
-    # all models in one shot
+    # all models in one shot
     $extjs_generator->models();
 
     $extjs_generator->store('Another');
 
-    # all stores in one shot
+    # all stores in one shot
     $extjs_generator->stores();
 
-    # all ExtJS artifacts in one shot (models & stores)
+    # all ExtJS artifacts in one shot (models & stores)
     $extjs_generator->mvc();
 
 # METHODS

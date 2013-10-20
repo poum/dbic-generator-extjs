@@ -8,9 +8,9 @@ use File::Copy;
 use Regexp::Common;
 use Carp;
 
-# ABSTRACT: ExtJS::Generator::DBIC::JsFile - Javascript file object to handle ExtJS file
+# ABSTRACT: Javascript file object to handle ExtJS file
 
-=head2 METHODS
+=head1 METHODS
 
 The loaded file will be split in 3 parts:
 
@@ -24,7 +24,7 @@ The loaded file will be split in 3 parts:
 
 =back
 
-=head3 className
+=head2 className
 
 The defined class name
 
@@ -35,7 +35,7 @@ has 'className' => (
     isa => 'Str'
 );
 
-=head3 file
+=head2 file
 
 File full path
 
@@ -46,7 +46,7 @@ has 'file' => (
     isa => 'Str'
 );
 
-=head3 prefix
+=head2 prefix
 
 File part before the define part, to be keept as it is
 
@@ -58,7 +58,7 @@ has 'prefix' => (
     default => sub { '' }
 );
 
-=head3 define
+=head2 define
 
 The define line 
 
@@ -69,7 +69,7 @@ has 'define' => (
     isa => 'Str'
 );
 
-=head3 template
+=head2 template
 
 File usefull part
 
@@ -81,7 +81,7 @@ has 'template' => (
     default => sub { '{}' }
 );
 
-=head3 funtions 
+=head2 funtions 
 
 All method body found in template
 
@@ -93,7 +93,7 @@ has 'functions' => (
     default => sub { {} }
 );
 
-=head3 comments
+=head2 comments
 
 All comments found in template
 
@@ -105,7 +105,7 @@ has 'comments' => (
     default => sub { {} }
 );
 
-=head3 suffix
+=head2 suffix
 
 File part after the usefull part, to be kept as it is
 
@@ -117,7 +117,7 @@ has 'suffix', => (
     default => sub { '' }
 );
 
-=head3 parse
+=head2 parse
 
 Parse file. The .js extension will be automatically added if omitted.
 The following assertions are made:
@@ -130,15 +130,13 @@ The following assertions are made:
 
 =back
 
-=over 4 
-
-=item Parameters
+=head3 parameters
 
 =over 4
 
 =item type : ExtJS class type to generate (model - default -, store, controller or view.Form, view.Tree, view.Grid)
 
-=item file : the javascript class definition file to parse (mandatory). The .js extension will be automatically added if needed.
+=item file : the javascript class definition file to parse (B<mandatory>). The .js extension will be automatically added if needed.
 
 =item path : the javascript class definition file path where the file should be
 
@@ -150,15 +148,19 @@ JsFile will attempt to retrieve file using the following strategies :
 
 =item if the file name is an absolute path (starting with /) or a relative path from the current dir or the upper dir, only try this location
 
-=item <path>/<type>/<file> (will stay the location if no file is found). If <path> isn't absolute, './' is added.
+=item 'path'/'type'/'file' (will stay the location if no file is found). If 'path' isn't absolute, './' is added.
 
-=item <path>/<file>. If <path> isn't absolute, './' is added.
+=item 'path'/'file'. If 'path' isn't absolute, './' is added.
 
-=item ./<type>/<file>
+=item ./'type'/'file'
 
-=item ./<file>
+=item ./'file'
 
 =back
+
+=head3 return
+
+the JsParser object reference
 
 =cut
 
@@ -243,9 +245,13 @@ sub parse {
   return $self; 
 }
 
-=head3 output
+=head2 output
 
 Assemble all parsed parts into one string
+
+=head3 return
+
+A string with all parsed parts assembled
 
 =cut
 sub output {
@@ -264,7 +270,7 @@ sub output {
     return $self->prefix . "Ext.define('" . $self->className . "', $template);" . $self->suffix;
 }
 
-=head3 write
+=head2 write
 
 Write the generated file.
 

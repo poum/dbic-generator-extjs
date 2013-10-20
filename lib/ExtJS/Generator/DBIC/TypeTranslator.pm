@@ -4,14 +4,13 @@ use Moose;
 use namespace::autoclean;
 use Carp;
 
-# ABSTRACT: ExtJS::Generator::DBIC::TypeTranslator - DBIx::Class - ExtJS Generic Type Translator
+# ABSTRACT: DBIx::Class - ExtJS Generic Type Translator
 
-=head2 METHODS
+=head1 METHODS
 
-=head3 pierreDeRosette
+=head2 new
 
-Return an hashref of all known type ExtJS translation
-(MySQL, PostgreSQL & Oracle for now)
+Create a new type translator object
 
 =cut
 has 'pierreDeRosette' => (
@@ -86,10 +85,22 @@ has 'pierreDeRosette' => (
   }
 );
 
-=head3 translate
+=head2 translate
 
 Translate the original type in ExtJS corresponding type.
 If this type is unknown, return 'auto'
+
+=head3 parameters
+
+=over 4
+
+=item schema type to translate in extjs type
+
+=back
+
+=head3 return
+
+ExtJS type string
 
 =cut
 sub translate {
@@ -98,7 +109,6 @@ sub translate {
 
   return $self->pierreDeRosette->{$schemaType} || 'auto';
 }
-
 
 __PACKAGE__->meta->make_immutable;
 

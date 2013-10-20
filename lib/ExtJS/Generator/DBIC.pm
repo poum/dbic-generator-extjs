@@ -45,7 +45,7 @@ to (re)generate corresponding ExtJS MVC javascript files. For now, it produces :
 =back
 
 It handles the already existings ExtJS javascript files, trying to preserve comment and non JSON parts. If an absolute or relative path is given,
-files are only looked for in this location. Otherwise try <path>/<type>/<file>, <path>/<file>, ./<type>/<file> and finally ./<file>. 
+files are only looked for in this location. Otherwise try 'path'/'type'/'file', 'path'/'file', ./'type'/'file' and finally ./'file'. 
 See L<ExtJS::Generator::DBIC::JsFile>.
 
 =cut
