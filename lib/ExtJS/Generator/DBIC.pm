@@ -5,10 +5,10 @@ use namespace::autoclean;
 use JSON::DWIW;
 use Carp;
 use UNIVERSAL::require;
-use File::Path qw/make_path/;
+use ExtJS::Generator::DBIC::JsFile;
 use ExtJS::Generator::DBIC::TypeTranslator;
 
-# ABSTRACT: ExtJS::Generator::DBIC::TypeTranslator - ExtJS MVC class generator using DBIx::Class schema
+#ABSTRACT: ExtJS::Generator::DBIC - ExtJS MVC class generator using DBIx::Class schema
 
 =head1 SYNOPSYS
 
@@ -16,7 +16,18 @@ use ExtJS::Generator::DBIC::TypeTranslator;
 
   my $extjs_generator = ExtJS::Generator::DBIC->new(schema_name => 'My::Schema');
 
+  $extjs_generator->model('Basic');
+
+  # all models in one shot
   $extjs_generator->models();
+
+  $extjs_generator->store('Another');
+
+  # all stores in one shot
+  $extjs_generator->stores();
+
+  # all ExtJS artifacts in one shot (models & stores)
+  $extjs_generator->mvc();
 
 =cut
 
@@ -93,6 +104,18 @@ has 'path' => (
   is => 'rw',
   isa => 'Str',
   default => 'js/app'
+);
+
+=head3 backup
+
+Flag to make a backup each time an existing js file already exists.
+True by default
+
+=cut
+has 'backup' => (
+    is => 'ro',
+    isa => 'Bool',
+    default => 1
 );
 
 =head3 json
@@ -182,7 +205,7 @@ Generate specified ExtJS model (field definition, validation rules, proxy and as
 If a javascript model file already exists, all other keys are preserved.
 
 If a nullable boolean field is encountered, the corresponding presence validation rule isn't
-generated to avoid ExtJS transform the null values in false ones.
+generated to avoid ExtJS transform the null values into false ones.
 
 =cut
 sub model {
@@ -191,7 +214,11 @@ sub model {
 
   croak "$name doesn't exist !" unless grep /^$name$/, @{$self->tables};
 
-  my ($model, $model_name) = $self->_getJSON($name, 'model');
+  my $jsFile = new ExtJS::Generator::DBIC::JsFile() or croak $!;
+
+  $jsFile->parse(file => $name, path => $self->path, namespace => $self->js_namespace);
+  my $model = $self->json->from_json($jsFile->template());
+
   $model->{extend} = 'Ext.data.Model' unless exists $model->{extend};
   unless (exists $model->{proxy}) {
     my $url = '/' . lc $name . '/';
@@ -288,13 +315,43 @@ sub model {
     push @{$model->{associations}}, $field unless @updatedField;
   }
 
-  make_path($self->path . '/model');
+  $jsFile->template($self->json->to_json($model));
 
-  open(my $fh, '>', $self->path . '/model/' . $name . '.js') or croak $!;
-  print $fh sprintf("Ext.define('%s.model.%s', %s);", $self->js_namespace, $name, $self->json->to_json($model));
-  close $fh;
+  $jsFile->write(backup => $self->backup);
 
   return $model;
+}
+
+=head3 store
+
+Generate specified ExtJS store (model and proxy). 
+If a javascript store file already exists, all other keys are preserved.
+
+=cut
+sub store {
+  my $self = shift;
+  my $name = shift or croak "Store name required ! (didn't you mind 'stores' ?)";
+  croak "$name doesn't exist !" unless grep /^$name$/, @{$self->tables};
+
+  my $jsFile = new ExtJS::Generator::DBIC::JsFile() or croak $!;
+
+  $jsFile->parse(type => 'store', file => $name, path => $self->path, namespace => $self->js_namespace);
+  my $store = $self->json->from_json($jsFile->template());
+
+  $store->{extend} = 'Ext.data.Store' unless exists $store->{extend};
+  $store->{model} = join '.', $self->js_namespace, 'model', $name unless exists $store->{model};
+  unless (exists $store->{proxy}) {
+    my $url = '/' . lc $name . '/';
+    $store->{proxy} = {
+      type => 'ajax',
+      url  =>  '/' . lc $name . '/list.json'
+    };
+  }
+
+  $jsFile->template($self->json->to_json($store));
+  $jsFile->write(backup => $self->backup);
+
+  return $store;
 }
 
 =head3 stores
@@ -311,71 +368,15 @@ sub stores {
   return @stores;
 }
 
-=head3 store
+=head3 mvc
 
-Generate specified ExtJS store (model and proxy). 
-If a javascript store file already exists, all other keys are preserved.
+Generate all ExtJS artifacts for all models found in the DBIx::Class Schema
 
 =cut
-sub store {
-  my $self = shift;
-  my $name = shift or croak "Store name required ! (didn't you mind 'stores' ?)";
-
-  croak "$name doesn't exist !" unless grep /^$name$/, @{$self->tables};
-
-  my ($store, $store_name) = $self->_getJSON($name, 'store');
-  $store->{extend} = 'Ext.data.Store' unless exists $store->{extend};
-  $store->{model} = join '.', $self->js_namespace, 'model', $name unless exists $store->{model};
-  unless (exists $store->{proxy}) {
-    my $url = '/' . lc $name . '/';
-    $store->{proxy} = {
-      type => 'ajax',
-      url  =>  '/' . lc $name . '/list.json'
-    };
-  }
-
-  make_path($self->path . '/store');
-
-  open(my $fh, '>', $self->path . '/store/' . $name . '.js') or croak $!;
-  print $fh sprintf("Ext.define('%s.store.%ss', %s);", $self->js_namespace, $name, $self->json->to_json($store));
-  close $fh;
-
-  return $store;
-}
-
-# _getJSON
-# 
-#  get previous 'type' ExtJS file if any with associated full name
-#
-# parameters:
-# - name: file name without the .js extension
-# - type: type
-#
-# return
-# - an array with the reference of the decoded Perl structure and the type name
-#
-sub _getJSON {
-  my ($self, $name, $type) = @_;
-
-  my $filename = join '/', $self->path, $type, "$name.js"; 
-  my $json = {};
-  my $type_name;
-  if (-e $filename) {
-    open(my $fh, '<', $filename);
-    my $file = '';
-    while (<$fh>) {
-      chomp;
-      $file .= $_; 
-    }
-    close $fh;
-
-    if ($file =~ /Ext\.define\s*\(\s*('[^']+')\s*,\s*(\{.+\})\);/) {
-      $type_name = $1;
-      $json = $self->json->from_json($2);
-    }
-  }
-
-  return ($json, $type_name);
+sub mvc {
+    my $self = shift;
+    $self->models();
+    $self->stores();
 }
 
 __PACKAGE__->meta->make_immutable;
@@ -388,7 +389,7 @@ __END__
 
 =over 4
 
-=item models, stores & mvc global generation function
+=item forms, grids, controllers & mvc global generation function
 
 =item treestore generator
 
@@ -398,19 +399,11 @@ __END__
 
 =item grid / tree generator
 
-=item use md5 (as DBIx::Class::Loader do) to verify the modified parts (compress then order the json file first)
-
 =item add backup / stop option if the generated file already exists
 
 =item use extjs main file for finding path to file and namespace
 
 =item use a config file
-
-=item search in local directory by default
-
-=item parse json with js comments
-
-=item fully restore previous json with just adding modfications
 
 =item add test for rewriting existing model files 
 

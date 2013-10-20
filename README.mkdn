@@ -1,6 +1,6 @@
 # NAME
 
-ExtJS::Generator::DBIC - ExtJS::Generator::DBIC::TypeTranslator - ExtJS MVC class generator using DBIx::Class schema
+ExtJS::Generator::DBIC - ExtJS::Generator::DBIC - ExtJS MVC class generator using DBIx::Class schema
 
 # VERSION
 
@@ -12,7 +12,18 @@ version 0.001001
 
     my $extjs_generator = ExtJS::Generator::DBIC->new(schema_name => 'My::Schema');
 
+    $extjs_generator->model('Basic');
+
+    # all models in one shot
     $extjs_generator->models();
+
+    $extjs_generator->store('Another');
+
+    # all stores in one shot
+    $extjs_generator->stores();
+
+    # all ExtJS artifacts in one shot (models & stores)
+    $extjs_generator->mvc();
 
 ## DESCRIPTION
 
@@ -46,6 +57,11 @@ Return an hashref of applied order to json extjs generated file
 
 The path where the js files can be retrieved / wrote
 
+### backup
+
+Flag to make a backup each time an existing js file already exists.
+True by default
+
 ### json
 
 JSON converter engine
@@ -68,32 +84,32 @@ Generate all ExtJS models found in the DBIx::Class Schema
 Generate specified ExtJS model (field definition, validation rules, proxy and association). 
 If a javascript model file already exists, all other keys are preserved.
 
-If a nullable boolean field is encountered, the corresponding presence validation rule is'nt
-generated to avoid ExtJS transform the null values in false ones.
-
-### stores
-
-Generate ExtJS stores for all models found in the DBIx::Class Schema
+If a nullable boolean field is encountered, the corresponding presence validation rule isn't
+generated to avoid ExtJS transform the null values into false ones.
 
 ### store
 
 Generate specified ExtJS store (model and proxy). 
 If a javascript store file already exists, all other keys are preserved.
 
+### stores
+
+Generate ExtJS stores for all models found in the DBIx::Class Schema
+
+### mvc
+
+Generate all ExtJS artifacts for all models found in the DBIx::Class Schema
+
 # TODO
 
-- models, stores & mvc global generation function
+- forms, grids, controllers & mvc global generation function
 - treestore generator
 - controller generator (using template)
 - form generator (combo for associated data)
 - grid / tree generator
-- use md5 (as DBIx::Class::Loader do) to verify the modified parts (compress then order the json file first)
 - add backup / stop option if the generated file already exists
 - use extjs main file for finding path to file and namespace
 - use a config file
-- search in local directory by default
-- parse json with js comments
-- fully restore previous json with just adding modfications
 - add test for rewriting existing model files 
 - add a script like the DBIx::Class::Loader one
 - make a TypeTranslator for each supported Database
