@@ -452,4 +452,10 @@ __END__
 
 =item Allow adding a generator with no need to modify DBIC.pm
 
+=item add parameters to not generate validation or association in model method
+
+=item add parameter to specify proxy values in model & store
+
+=item add parameter to change extend value in mode & store
+
 =back
