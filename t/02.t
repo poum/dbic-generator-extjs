@@ -1,3 +1,4 @@
+#!/usr/bin/perl
 use strict;
 use warnings;
 
@@ -12,6 +13,8 @@ use lib "$Bin/../lib";
 use lib "$Bin/lib";
 
 my $oldDir = chdir $Bin;
+
+diag('Testing ExtJS::Generator::DBIC::JsFile ...');
 
 require_ok('ExtJS::Generator::DBIC::JsFile');
 
@@ -36,11 +39,10 @@ ok($file->parse(file => 'Basic', namespace => 'My.Namespace'), 'Automatically ad
 
 is($file->output(), "Ext.define('My.Namespace.model.Basic', {});", 'check file generation');
 
-
 ok($file->write(), 'check file writing');
 
-remove_tree('model');
-
-chdir $oldDir;
-
 done_testing;
+
+# cleaning ...
+remove_tree('model');
+chdir $oldDir;

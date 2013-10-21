@@ -1,3 +1,5 @@
+#!/usr/bin/perl
+
 use strict;
 use warnings;
 
@@ -10,6 +12,8 @@ use lib "$Bin/lib";
 
 my $oldDir = chdir $Bin;
 
+diag('Testing ExtJS::Generator::DBIC::TypeTranslator ...');
+
 require_ok('ExtJS::Generator::DBIC::TypeTranslator');
 
 my $translator;
@@ -21,6 +25,6 @@ is($translator->translate('varchar'), 'string', 'known type correctly translated
 is($translator->translate('point'), 'float', 'known type correctly translated');
 is($translator->translate('von Bismarck'), 'auto', 'unknown type correctly translated to auto');
 
-chdir $oldDir;
-
 done_testing;
+
+chdir $oldDir;

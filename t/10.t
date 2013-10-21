@@ -1,3 +1,4 @@
+#!/usr/bin/perl
 use strict;
 use warnings;
 
@@ -12,6 +13,8 @@ use lib "$Bin/../lib";
 use lib "$Bin/lib";
 
 my $oldDir = chdir $Bin;
+
+diag('Testing ExtJS::Generator::DBIC ...');
 
 remove_tree('js');
 
@@ -71,5 +74,8 @@ ok($generator->stores(), 'ExtJS store global generation');
 remove_tree('js');
 ok($generator->mvc(), 'ExtJS global generation');
 
-chdir $oldDir;
 done_testing;
+
+# cleaning
+remove_tree('js');
+chdir $oldDir;
