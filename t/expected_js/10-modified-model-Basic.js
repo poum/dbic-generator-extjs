@@ -1,4 +1,12 @@
-Ext.define('My.model.Basic', {
+/*
+ * preliminary comment
+ */
+
+Ext.define('Some.object', {
+    console.log('Nothing to do with our model My.model.Basic');
+});
+
+Ext.define('File.model.Basic', {
     associations:
         [
             
@@ -11,9 +19,9 @@ Ext.define('My.model.Basic', {
             }
         ],
     extend:"Ext.data.Model",
+    // W.C ... (tribute to Tex Avery)
     fields:
         [
-            
             {
                 name:"id",
                 type:"int"
@@ -44,14 +52,15 @@ Ext.define('My.model.Basic', {
                 name:"explicitemptystring",
                 type:"string"
             },
-            
+            // trying to add a defaut value ... 
             {
                 name:"emptytagdef",
-                type:"string"
+                type:"string",
+                defaultValue: "I will survive !"
             },
             
             {
-                defaultValue:"2",
+                defaultValue:2,
                 name:"another_id",
                 type:"int"
             },
@@ -107,5 +116,39 @@ Ext.define('My.model.Basic', {
                 field:"boolfield",
                 type:"presence"
             }
-        ]
+        ],
+    // An useful method to display My.model.Basic in some HTML page
+    html: function() {
+        // this comment in function will go with the wind
+        return '<span title="' . this.description . '">' . this.name . '</span>';
+    },
+
+    /*
+     * comment: {  a method under Oracle patent }
+     * 
+     */
+    add: function(a, b) {
+        /*
+         * inner comment copyrighted { [ ( yep ) ] }
+         *
+         */
+        var result = 0;
+        var price = 100000;
+
+        for(var i = 1; i < a; i++) {
+            result += 1;
+            price *= 42;
+        }
+
+        for(var j = 1; j < b; j++) {
+            result = result + 1;
+        }
+
+        return price;
+    }
 });
+
+console.log('Additionnal Javascript code');
+
+// This is the end
+// my friend

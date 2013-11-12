@@ -5,6 +5,7 @@ use namespace::autoclean;
 use File::Basename;
 use File::Path qw/make_path/;
 use File::Copy;
+use File::Slurp;
 use Regexp::Common;
 use Carp;
 
@@ -18,7 +19,7 @@ The loaded file will be split in 3 parts:
 
 =item * the prefix: the text before the usefull part
 
-=item * the template, ie the usefull part. All methods and comments in it are replaced by JSON containers
+=item * the object, ie the usefull part. All methods and comments in it are replaced by JSON containers
 
 =item * the suffix: the text after the usefull part
 
@@ -69,25 +70,37 @@ has 'define' => (
     isa => 'Str'
 );
 
-=head2 template
+=head2 object
 
 File usefull part
 
 =cut
 
-has 'template' => (
+has 'object' => (
     is => 'rw',
     isa => 'Str',
     default => sub { '{}' }
 );
 
-=head2 funtions 
+=head2 end_define
 
-All method body found in template
+The ending of define
 
 =cut
 
-has 'functions' => (
+has 'end_define' => (
+    is => 'rw',
+    isa => 'Str',
+    default => sub { ');' }
+);
+
+=head2 funtions 
+
+All method body found in object
+
+=cut
+
+has 'methods' => (
     is => 'rw',
     isa => 'HashRef',
     default => sub { {} }
@@ -95,7 +108,7 @@ has 'functions' => (
 
 =head2 comments
 
-All comments found in template
+All comments found in object
 
 =cut
 
@@ -170,7 +183,7 @@ sub parse {
     
   my @typeOk = qw/model store controller view.Form view.Grid view.Tree/;
   croak "Type parameter mandatory (" . join(', ', @typeOk) . ')' unless $param{type};
-  grep /^$param{type}$/, @typeOk or croak 'Unknow type ' .$param{type} . ' : use ' . join(', ', @typeOk); 
+  grep /^$param{type}$/, @typeOk or croak 'Unknow type ' . $param{type} . ' : use ' . join(', ', @typeOk); 
   croak "File name parameter mandatory" unless $param{file};
 
   $param{file} .= '.js' unless $param{file} =~ /\.js$/;
@@ -197,12 +210,9 @@ sub parse {
   }
 
   if (-e $self->file) {
-      my $template = '';
-      open(my $fh, "<", $self->file) or croak "Error while loading '$self->file' : $!";
-      $template .= $_ while <$fh>;
-      close $fh;
+      my $object = read_file($self->file) or croak "Error while loading '$self->file' : $!";
 
-      $template =~ s/^(.*)(?=Ext.define\s*\(\s*'([^']+\.$name)'\s*,\s*\{)//s;
+      $object =~ s/^(.*)(?=Ext.define\s*\(\s*'([^']+\.$name)'\s*,\s*\{)//s;
 
       # extract define class name and all Javacript before it
       $self->prefix($1) if $1;
@@ -210,31 +220,39 @@ sub parse {
       $self->className($2);
 
       # extract the define part
-      $template =~ s/^([^{]+)//s;
+      $object =~ s/^([^{]+)//s;
       $self->define($1) or croak "No define found";
 
       # extract all Javascript after the define body
-      $template =~ s/($RE{balanced}{-parens => '{}'})(.*)$/$1/s;
-      $self->suffix($2) if $2;
+      $object =~ s/($RE{balanced}{-parens => '{}'})(\s*\)\s*;)(.*)$/$1/ms;
+      # yes, it should be $2 and $3 but $RE should add one behind the scene
+      $self->end_define($3) if $3;
+      $self->suffix($4) if $4;
 
       # replace all methods by a String because this isn't JSON
       my $cpt = 1;
-      while ($template =~ /(function\s*$RE{balanced}{-parens => '()'}\s*$RE{balanced}{-parens => '{}' })/s) {
-        $self->functions()->{"FUNC_$cpt"} = $1;
-        $template =~ s/function\s*$RE{balanced}{-parens => '()'}\s*$RE{balanced}{-parens => '{}' }/"FUNC_$cpt"/s;
+      while ($object =~ /(function\s*$RE{balanced}{-parens => '()'}\s*$RE{balanced}{-parens => '{}' })/s) {
+        $self->methods()->{"METHOD_$cpt"} = $1;
+        $object =~ s/function\s*$RE{balanced}{-parens => '()'}\s*$RE{balanced}{-parens => '{}' }/"METHOD_$cpt"/s;
         $cpt++;
       }
 
       # replace all inner comments by ',{comment_NNN:"comment_NNN"},' because this isn't JSON
       # we do this after extracting method to let method comments as they are
+      # n fonctionne pas
       $cpt = 1;
-      while ($template =~ /($RE{comment}{JavaScript})/s) {
-        $self->comments()->{"COMMENT_$cpt"} = $1;
-        $template =~ s/$RE{comment}{JavaScript}/,{comment:"COMMENT_$cpt"},/s;
+      my ($context, $virgule, $mask);
+      while ($object =~ /(^.*?)($RE{comment}{JavaScript})/s) {
+        $self->comments()->{"COMMENT_$cpt"} = $2;
+        ($context, $virgule) = $self->findContext($1);
+        $mask = 'comment:"COMMENT_' . $cpt . '"';
+        $mask = '{' . $mask . '}' if $context eq '[';
+        $mask = ',' . $mask if $virgule;
+        $object =~ s/$RE{comment}{JavaScript}/$mask,/s;
         $cpt++;
       }
 
-      $self->template($template); 
+      $self->object($object); 
   }
   # no file, just get className
   else {
@@ -245,29 +263,46 @@ sub parse {
   return $self; 
 }
 
+# Analyse le code 
+# et retourne la parenthèse englobante [ ou {
+# et un flag si une virgule est nécessaire
+sub findContext {
+  my $self = shift;
+  my $text = shift;
+
+  $text =~ s/[^\[\]\{\},]//gs;
+  my $virgule = substr $text, -1, 1;
+  $virgule = ($virgule =~ /,|\[|\{/) ? 0 : 1;
+
+  $text =~ s/,//g;
+  $text =~ s/(\[\]|\{\})//g while $text =~ /(\[\]|\{\})/;
+
+  return (substr($text, -1, 1), $virgule);
+}
+
 =head2 output
 
 Assemble all parsed parts into one string
 
 =head3 return
 
-A string with all parsed parts assembled
+A string with all parsed parts reassembled
 
 =cut
 sub output {
     my $self = shift;
 
-    my $template = $self->template;
+    my $object = $self->object;
 
     while ( my ($key, $comment) = each $self->comments() ) {
-      $template =~ s/,{comment:"$key"},/$comment/s;
+      $object =~ s/,?\{?comment:"$key"\}?,/$comment/s;
     }
 
-    while (my ($key, $function) = each $self->functions() ) {
-      $template =~ s/"$key"/$function/s;
+    while (my ($key, $method) = each $self->methods() ) {
+      $object =~ s/"$key"/$method/s;
     }
 
-    return $self->prefix . "Ext.define('" . $self->className . "', $template);" . $self->suffix;
+    return $self->prefix . "Ext.define('" . $self->className . "', $object" . $self->end_define . $self->suffix;
 }
 
 =head2 write
@@ -300,9 +335,7 @@ sub write {
         }
     }
 
-    open(my $fh, '>', $self->file) or croak "Unable to write " . $self->file . " : $!";
-    print $fh $self->output();
-    close $fh;
+    write_file($self->file, $self->output()) or croak "Unable to write " . $self->file . " : $!";
 }
 
 __PACKAGE__->meta->make_immutable;

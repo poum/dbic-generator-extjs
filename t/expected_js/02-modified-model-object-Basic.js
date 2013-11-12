@@ -1,4 +1,4 @@
-Ext.define('My.model.Basic', {
+{
     associations:
         [
             
@@ -11,9 +11,8 @@ Ext.define('My.model.Basic', {
             }
         ],
     extend:"Ext.data.Model",
-    fields:
+    comment:"COMMENT_1",    fields:
         [
-            
             {
                 name:"id",
                 type:"int"
@@ -44,14 +43,14 @@ Ext.define('My.model.Basic', {
                 name:"explicitemptystring",
                 type:"string"
             },
-            
-            {
+            {comment:"COMMENT_2"},            {
                 name:"emptytagdef",
-                type:"string"
+                type:"string",
+                defaultValue: "I will survive !"
             },
             
             {
-                defaultValue:"2",
+                defaultValue:2,
                 name:"another_id",
                 type:"int"
             },
@@ -107,5 +106,9 @@ Ext.define('My.model.Basic', {
                 field:"boolfield",
                 type:"presence"
             }
-        ]
-});
+        ],
+    comment:"COMMENT_3",    html: "METHOD_1",
+
+    comment:"COMMENT_4",
+    add: "METHOD_2"
+}

@@ -8,6 +8,8 @@ use UNIVERSAL::require;
 use ExtJS::Generator::DBIC::JsFile;
 use ExtJS::Generator::DBIC::TypeTranslator;
 
+use Data::Dumper;
+
 #ABSTRACT: ExtJS MVC class generator using DBIx::Class schema
 
 =head1 SYNOPSYS
@@ -25,6 +27,9 @@ use ExtJS::Generator::DBIC::TypeTranslator;
 
   # all stores in one shot
   $extjs_generator->stores();
+
+  # all ExtJS artifacts related to Basic model in one shot (model & store)
+  $extjs_generator->mvc('Basic');
 
   # all ExtJS artifacts in one shot (models & stores)
   $extjs_generator->mvc();
@@ -104,7 +109,8 @@ has 'json' => (
       bare_keys => 1,
       convert_bool => 1,
       sort_keys => 1,
-      bare_solidus => 1
+      bare_solidus => 1,
+      use_exceptions => 0
     }) 
   }
 );
@@ -206,7 +212,10 @@ sub model {
   my $jsFile = new ExtJS::Generator::DBIC::JsFile() or croak $!;
 
   $jsFile->parse(file => $name, path => $self->path, namespace => $self->js_namespace);
-  my $model = $self->json->from_json($jsFile->template());
+  my ($model, $err) = $self->json->from_json($jsFile->object());
+  
+  die 'ERROR: ' . Dumper($jsFile->object) . "\n" . $err if $err;
+
 
   $model->{extend} = 'Ext.data.Model' unless exists $model->{extend};
   unless (exists $model->{proxy}) {
@@ -304,7 +313,7 @@ sub model {
     push @{$model->{associations}}, $field unless @updatedField;
   }
 
-  $jsFile->template($self->json->to_json($model));
+  $jsFile->object($self->json->to_json($model));
 
   $jsFile->write(backup => $self->backup);
 
@@ -322,9 +331,9 @@ List of model Perl structure references
 =cut
 sub models {
   my $self = shift; 
-  my @models = ();
+  my @models = @{$self->tables};
 
-  push @models, $self->model($_) foreach @{$self->tables};
+  $self->model($_) foreach @models;
 
   return @models;
 }
@@ -355,7 +364,7 @@ sub store {
   my $jsFile = new ExtJS::Generator::DBIC::JsFile() or croak $!;
 
   $jsFile->parse(type => 'store', file => $name, path => $self->path, namespace => $self->js_namespace);
-  my $store = $self->json->from_json($jsFile->template());
+  my $store = $self->json->from_json($jsFile->object());
 
   $store->{extend} = 'Ext.data.Store' unless exists $store->{extend};
   $store->{model} = join '.', $self->js_namespace, 'model', $name unless exists $store->{model};
@@ -367,7 +376,7 @@ sub store {
     };
   }
 
-  $jsFile->template($self->json->to_json($store));
+  $jsFile->object($self->json->to_json($store));
   $jsFile->write(backup => $self->backup);
 
   return $store;
@@ -393,7 +402,15 @@ sub stores {
 
 =head2 mvc
 
-Generate all ExtJS artifacts for all models found in the DBIx::Class Schema
+Generate all ExtJS artifacts for the specified model or all models found in the DBIx::Class Schema
+
+=head3 parameter
+
+=over 4
+
+=item model name (if no model is specified, all ExtJS artifacts will be generated)
+
+=back
 
 =head3 return
 
@@ -402,8 +419,14 @@ List of Perl structure references
 =cut
 sub mvc {
     my $self = shift;
+    my $model = shift;
 
-    return ($self->models(), $self->stores());
+    if ($model) {
+      return ($self->model($model), $self->store($model));
+    }
+    else {
+      return ($self->models(), $self->stores());
+    }
 }
 
 __PACKAGE__->meta->make_immutable;
@@ -446,7 +469,7 @@ __END__
 
 =item Extract Model generator in ExtJS::Generator::DBIC::Engine::Model (and Form, Grid, Tree, Controller, Store, etc.)
 
-=item Hide JSON::DWIW in JsFile.pm
+=item Hide JSON::DWIW in JsFile.pm ?
 
 =item Factorize model & store and models & stores
 
@@ -457,5 +480,15 @@ __END__
 =item add parameter to specify proxy values in model & store
 
 =item add parameter to change extend value in mode & store
+
+=item add warning if file name and class name differ
+
+=item use a portable path separator
+
+=item try not to alter $_
+
+=item restore initial key order
+
+=item use JavaScript::Beautifier
 
 =back

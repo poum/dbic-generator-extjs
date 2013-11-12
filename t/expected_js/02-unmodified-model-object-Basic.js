@@ -1,4 +1,4 @@
-Ext.define('My.model.Basic', {
+{
     associations:
         [
             
@@ -51,7 +51,7 @@ Ext.define('My.model.Basic', {
             },
             
             {
-                defaultValue:"2",
+                defaultValue:2,
                 name:"another_id",
                 type:"int"
             },
@@ -108,4 +108,4 @@ Ext.define('My.model.Basic', {
                 type:"presence"
             }
         ]
-});
+}
