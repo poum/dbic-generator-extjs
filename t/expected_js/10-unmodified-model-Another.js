@@ -1,15 +1,4 @@
 Ext.define('My.model.Another', {
-    associations:
-        [
-            
-            {
-                associationKey:"get_Basic",
-                foreign:"id",
-                model:"Basic",
-                primaryKey:"another_id",
-                type:"hasMany"
-            }
-        ],
     extend:"Ext.data.Model",
     fields:
         [
@@ -24,6 +13,25 @@ Ext.define('My.model.Another', {
                 type:"float"
             }
         ],
+    validations:
+        [
+            
+            {
+                field:"id",
+                type:"presence"
+            }
+        ],
+    associations:
+        [
+            
+            {
+                associationKey:"get_Basic",
+                foreign:"id",
+                model:"Basic",
+                primaryKey:"another_id",
+                type:"hasMany"
+            }
+        ],
     proxy:
         {
             api:
@@ -34,13 +42,5 @@ Ext.define('My.model.Another', {
                     update:"/another/update"
                 },
             type:"ajax"
-        },
-    validations:
-        [
-            
-            {
-                field:"id",
-                type:"presence"
-            }
-        ]
+        }
 });

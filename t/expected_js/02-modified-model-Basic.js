@@ -3,21 +3,10 @@
  */
 
 Ext.define('Some.object', {
-    console.log('Nothing to do with our model My.model.Basic');
+    console.log('Nothing to do with our model File.model.Basic');
 });
 
 Ext.define('File.model.Basic', {
-    associations:
-        [
-            
-            {
-                associationKey:"another_id",
-                foreign:"another_id",
-                model:"Another",
-                primaryKey:"id",
-                type:"belongsTo"
-            }
-        ],
     extend:"Ext.data.Model",
     // W.C ... (tribute to Tex Avery)
     fields:
@@ -115,6 +104,17 @@ Ext.define('File.model.Basic', {
             {
                 field:"boolfield",
                 type:"presence"
+            }
+        ],
+    associations:
+        [
+            
+            {
+                associationKey:"another_id",
+                foreign:"another_id",
+                model:"Another",
+                primaryKey:"id",
+                type:"belongsTo"
             }
         ],
     // An useful method to display My.model.Basic in some HTML page

@@ -34,6 +34,9 @@ See [ExtJS::Generator::DBIC::JsFile](http://search.cpan.org/perldoc?ExtJS::Gener
     # all stores in one shot
     $extjs_generator->stores();
 
+    # all ExtJS artifacts related to Basic model in one shot (model & store)
+    $extjs_generator->mvc('Basic');
+
     # all ExtJS artifacts in one shot (models & stores)
     $extjs_generator->mvc();
 
@@ -102,7 +105,11 @@ List of store Perl structure references
 
 ## mvc
 
-Generate all ExtJS artifacts for all models found in the DBIx::Class Schema
+Generate all ExtJS artifacts for the specified model or all models found in the DBIx::Class Schema
+
+### parameter
+
+- model name (if no model is specified, all ExtJS artifacts will be generated)
 
 ### return
 
@@ -125,12 +132,17 @@ List of Perl structure references
 - Add file and script to configure/produce the jsduck documentation
 - Add inclusion, exclusion and format validation rules
 - Extract Model generator in ExtJS::Generator::DBIC::Engine::Model (and Form, Grid, Tree, Controller, Store, etc.)
-- Hide JSON::DWIW in JsFile.pm
+- Hide JSON::DWIW in JsFile.pm ?
 - Factorize model & store and models & stores
 - Allow adding a generator with no need to modify DBIC.pm
 - add parameters to not generate validation or association in model method
 - add parameter to specify proxy values in model & store
 - add parameter to change extend value in mode & store
+- add warning if file name and class name differ
+- use a portable path separator
+- try not to alter $\_
+- restore initial key order
+- use JavaScript::Beautifier
 
 # AUTHORS
 

@@ -1,15 +1,4 @@
 Ext.define('File.model.Basic', {
-    associations:
-        [
-            
-            {
-                associationKey:"another_id",
-                foreign:"another_id",
-                model:"Another",
-                primaryKey:"id",
-                type:"belongsTo"
-            }
-        ],
     extend:"Ext.data.Model",
     fields:
         [
@@ -106,6 +95,17 @@ Ext.define('File.model.Basic', {
             {
                 field:"boolfield",
                 type:"presence"
+            }
+        ],
+    associations:
+        [
+            
+            {
+                associationKey:"another_id",
+                foreign:"another_id",
+                model:"Another",
+                primaryKey:"id",
+                type:"belongsTo"
             }
         ]
 });

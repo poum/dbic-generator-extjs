@@ -252,6 +252,18 @@ sub parse {
         $cpt++;
       }
 
+      # add num to each key to fix key order
+      # remenber some keys in $self->keys to link with numbered
+      $cpt = 1;
+      while ($object =~ /("?)([A-Za-z0-9_]+)\1\s*:/s) {
+        $mask = $1 . $2 . $1;
+        $object =~ s/$mask:/##$cpt##$mask##:/s;
+        $cpt++;
+      }
+
+      # '##' was to avoid previous loop beeing infinite and beyond
+      # but '##' is JSON invalid
+      $object =~ s/##/__/gs;
       $self->object($object); 
   }
   # no file, just get className
@@ -293,6 +305,8 @@ sub output {
     my $self = shift;
 
     my $object = $self->object;
+
+    $object =~ s/__\d+__([A-Za-z0-9_]+)__/$1/gs;
 
     while ( my ($key, $comment) = each $self->comments() ) {
       $object =~ s/,?\{?comment:"$key"\}?,/$comment/s;

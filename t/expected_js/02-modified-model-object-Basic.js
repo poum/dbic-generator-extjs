@@ -1,114 +1,114 @@
 {
-    associations:
-        [
-            
-            {
-                associationKey:"another_id",
-                foreign:"another_id",
-                model:"Another",
-                primaryKey:"id",
-                type:"belongsTo"
-            }
-        ],
-    extend:"Ext.data.Model",
-    comment:"COMMENT_1",    fields:
+    __1__extend__:"Ext.data.Model",
+    __2__comment__:"COMMENT_1",    __3__fields__:
         [
             {
-                name:"id",
-                type:"int"
+                __4__name__:"id",
+                __5__type__:"int"
             },
             
             {
-                defaultValue:"hello",
-                name:"title",
-                type:"string"
+                __6__defaultValue__:"hello",
+                __7__name__:"title",
+                __8__type__:"string"
             },
             
             {
-                name:"description",
-                type:"string"
+                __9__name__:"description",
+                __10__type__:"string"
             },
             
             {
-                name:"email",
-                type:"string"
+                __11__name__:"email",
+                __12__type__:"string"
             },
             
             {
-                name:"explicitnulldef",
-                type:"string"
+                __13__name__:"explicitnulldef",
+                __14__type__:"string"
             },
             
             {
-                name:"explicitemptystring",
-                type:"string"
+                __15__name__:"explicitemptystring",
+                __16__type__:"string"
             },
-            {comment:"COMMENT_2"},            {
-                name:"emptytagdef",
-                type:"string",
-                defaultValue: "I will survive !"
-            },
-            
-            {
-                defaultValue:2,
-                name:"another_id",
-                type:"int"
+            {__17__comment__:"COMMENT_2"},            {
+                __18__name__:"emptytagdef",
+                __19__type__:"string",
+                __20__defaultValue__: "I will survive !"
             },
             
             {
-                name:"timest",
-                type:"date"
+                __21__defaultValue__:2,
+                __22__name__:"another_id",
+                __23__type__:"int"
             },
             
             {
-                defaultValue:false,
-                name:"boolfield",
-                type:"boolean"
+                __24__name__:"timest",
+                __25__type__:"date"
+            },
+            
+            {
+                __26__defaultValue__:false,
+                __27__name__:"boolfield",
+                __28__type__:"boolean"
             }
         ],
-    proxy:
+    __29__proxy__:
         {
-            api:
+            __30__api__:
                 {
-                    create:"/basic/create",
-                    destroy:"/basic/delete",
-                    read:"/basic/read",
-                    update:"/basic/update"
+                    __31__create__:"/basic/create",
+                    __32__destroy__:"/basic/delete",
+                    __33__read__:"/basic/read",
+                    __34__update__:"/basic/update"
                 },
-            type:"ajax"
+            __35__type__:"ajax"
         },
-    validations:
+    __36__validations__:
         [
             
             {
-                field:"id",
-                type:"presence"
+                __37__field__:"id",
+                __38__type__:"presence"
             },
             
             {
-                field:"title",
-                type:"presence"
+                __39__field__:"title",
+                __40__type__:"presence"
             },
             
             {
-                field:"title",
-                max:"100",
-                type:"length"
+                __41__field__:"title",
+                __42__max__:"100",
+                __43__type__:"length"
             },
             
             {
-                field:"email",
-                max:"500",
-                type:"length"
+                __44__field__:"email",
+                __45__max__:"500",
+                __46__type__:"length"
             },
             
             {
-                field:"boolfield",
-                type:"presence"
+                __47__field__:"boolfield",
+                __48__type__:"presence"
             }
         ],
-    comment:"COMMENT_3",    html: "METHOD_1",
+    __49__associations__:
+        [
+            
+            {
+                __50__associationKey__:"another_id",
+                __51__foreign__:"another_id",
+                __52__model__:"Another",
+                __53__primaryKey__:"id",
+                __54__type__:"belongsTo"
+            }
+        ],
+    __55__comment__:"COMMENT_3",    __56__html__: "METHOD_1",
 
-    comment:"COMMENT_4",
-    add: "METHOD_2"
+    __57__comment__:"COMMENT_4",
+    __58__add__: "METHOD_2"
 }

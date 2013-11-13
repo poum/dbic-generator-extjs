@@ -69,6 +69,8 @@ foreach my $model (@models) {
     equivalent_files_ok("model/$model.js", "10-unmodified-model-$model.js", 'Generated ExtJS ' . $model . ' model ok');
 }
 
+BAIL_OUT("houba");
+
 ok($generator->models(), 'Extjs model global regeneration');
 
 foreach my $model (@models) {
@@ -89,7 +91,6 @@ foreach my $model (@models) {
     diag("model/$model.js" . ' *** ' . "10-modified-model-$model.js");
 }
 
-BAIL_OUT("houba");
 
 # Testing store / stores (re)generation ...
 TODO: {

@@ -73,7 +73,6 @@ has 'schema' => (
 
 has 'tables' => (is => 'rw');
 
-# not used for now ... TODO
 has 'order' => (
   is => 'ro',
   isa => 'HashRef',
@@ -81,8 +80,9 @@ has 'order' => (
 
     {
       model => [ qw/extend fields validations associations proxy/ ],
+      # not used yet ...
       fields => [ qw/name type defaultValue/ ],
-      proxy => [ qw/type api/ ],
+      # associations, validations ....
     }
   }
 );
@@ -213,14 +213,23 @@ sub model {
 
   $jsFile->parse(file => $name, path => $self->path, namespace => $self->js_namespace);
   my ($model, $err) = $self->json->from_json($jsFile->object());
-  
-  die 'ERROR: ' . Dumper($jsFile->object) . "\n" . $err if $err;
 
+  # translate keys in ordered ones
+  my %o = ();
+  if (keys %$model) {
+  }
+  else {
+    my $cpt = 1;
+    foreach (@{$self->order->{model}}) {
+      $o{$_} = '__' . $cpt . '__' . $_ . '__';
+      $cpt++;
+    }
+  }
 
-  $model->{extend} = 'Ext.data.Model' unless exists $model->{extend};
-  unless (exists $model->{proxy}) {
+  $model->{$o{extend}} = 'Ext.data.Model' unless exists $model->{$o{extend}};
+  unless (exists $model->{$o{proxy}}) {
     my $url = '/' . lc $name . '/';
-    $model->{proxy} = {
+    $model->{$o{proxy}} = {
       type => 'ajax',
       api => {
         read    => $url . 'read',
@@ -238,7 +247,7 @@ sub model {
     $info = $resultset->column_info($column);
 
     # the field already exists ?
-    @updatedField = grep { $_->{name} eq $column } @{$model->{fields}};
+    @updatedField = grep { $_->{name} eq $column } @{$model->{$o{fields}}};
     $field = @updatedField ? $updatedField[0] : { name => $column };
   
     $field->{type} = $self->typeTranslator->translate($info->{data_type});
@@ -251,25 +260,25 @@ sub model {
         $field->{defaultValue} = $info->{default_value}; 
       }
     }
-    push @{$model->{fields}}, $field unless @updatedField;
+    push @{$model->{$o{fields}}}, $field unless @updatedField;
 
     # the presence validation already exists ?
-    @updatedField = grep { $_->{field} eq $column and $_->{type} eq 'presence' } @{$model->{validations}};
+    @updatedField = grep { $_->{field} eq $column and $_->{type} eq 'presence' } @{$model->{$o{validations}}};
     if ($info->{is_nullable}) {
       # suppress presence validation if the field is now nullable
       $updatedField[0] = undef if @updatedField;
     }
     else {
       # add presence validation if it doesn't already exist
-      push @{$model->{validations}}, { type => 'presence', field => $column } unless @updatedField;
+      push @{$model->{$o{validations}}}, { type => 'presence', field => $column } unless @updatedField;
     }
 
     # the max size validation already exists ?
-    @updatedField = grep { $_->{field} eq $column and $_->{type} eq 'length' and $_->{max} } @{$model->{validations}};
+    @updatedField = grep { $_->{field} eq $column and $_->{type} eq 'length' and $_->{max} } @{$model->{$o{validations}}};
     if ($info->{size} and $field->{type} eq 'string') {
       $field = @updatedField ? $updatedField[0] : { field => $column, type => 'length' };
       $field->{max} = $info->{size};
-      push @{$model->{validations}}, $field unless @updatedField;
+      push @{$model->{$o{validations}}}, $field unless @updatedField;
     }
     else {
       # suppress the validation if it's became useless
@@ -305,12 +314,12 @@ sub model {
     }
     $rel_col =~ s/^foreign\.//;
     $our_col =~ s/^self\.//;
-    @updatedField = grep { $_->{model} eq $modelname and $_->{type} eq $reltype } @{$model->{associations}};
+    @updatedField = grep { $_->{model} eq $modelname and $_->{type} eq $reltype } @{$model->{$o{associations}}};
     $field = @updatedField ? $updatedField[0] : { model => $modelname, type => $reltype };
     $field->{associationKey} = $relation;
     $field->{primaryKey} = $rel_col;
     $field->{foreign} = $our_col;
-    push @{$model->{associations}}, $field unless @updatedField;
+    push @{$model->{$o{associations}}}, $field unless @updatedField;
   }
 
   $jsFile->object($self->json->to_json($model));

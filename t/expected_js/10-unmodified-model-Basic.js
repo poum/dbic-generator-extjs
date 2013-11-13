@@ -1,15 +1,4 @@
 Ext.define('My.model.Basic', {
-    associations:
-        [
-            
-            {
-                associationKey:"another_id",
-                foreign:"another_id",
-                model:"Another",
-                primaryKey:"id",
-                type:"belongsTo"
-            }
-        ],
     extend:"Ext.data.Model",
     fields:
         [
@@ -67,17 +56,6 @@ Ext.define('My.model.Basic', {
                 type:"boolean"
             }
         ],
-    proxy:
-        {
-            api:
-                {
-                    create:"/basic/create",
-                    destroy:"/basic/delete",
-                    read:"/basic/read",
-                    update:"/basic/update"
-                },
-            type:"ajax"
-        },
     validations:
         [
             
@@ -107,5 +85,27 @@ Ext.define('My.model.Basic', {
                 field:"boolfield",
                 type:"presence"
             }
-        ]
+        ],
+    associations:
+        [
+            
+            {
+                associationKey:"another_id",
+                foreign:"another_id",
+                model:"Another",
+                primaryKey:"id",
+                type:"belongsTo"
+            }
+        ],
+    proxy:
+        {
+            api:
+                {
+                    create:"/basic/create",
+                    destroy:"/basic/delete",
+                    read:"/basic/read",
+                    update:"/basic/update"
+                },
+            type:"ajax"
+        }
 });
