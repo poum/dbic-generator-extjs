@@ -125,7 +125,6 @@ List of Perl structure references
 - add backup / stop option if the generated file already exists
 - use extjs main file for finding path to file and namespace
 - use a config file
-- add test for rewriting existing model files 
 - add a script like the DBIx::Class::Loader one
 - make a TypeTranslator for each supported Database
 - SenchaCmd integration ?
@@ -134,7 +133,7 @@ List of Perl structure references
 - Extract Model generator in ExtJS::Generator::DBIC::Engine::Model (and Form, Grid, Tree, Controller, Store, etc.)
 - Hide JSON::DWIW in JsFile.pm ?
 - Factorize model & store and models & stores
-- Allow adding a generator with no need to modify DBIC.pm
+- Allow adding a generator (plugin) with no need to modify DBIC.pm
 - add parameters to not generate validation or association in model method
 - add parameter to specify proxy values in model & store
 - add parameter to change extend value in mode & store
@@ -143,6 +142,8 @@ List of Perl structure references
 - try not to alter $\_
 - restore initial key order
 - use JavaScript::Beautifier
+- generate unit test files
+- add a key order option
 
 # AUTHORS
 

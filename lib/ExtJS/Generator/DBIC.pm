@@ -464,8 +464,6 @@ __END__
 
 =item use a config file
 
-=item add test for rewriting existing model files 
-
 =item add a script like the DBIx::Class::Loader one
 
 =item make a TypeTranslator for each supported Database
@@ -482,7 +480,7 @@ __END__
 
 =item Factorize model & store and models & stores
 
-=item Allow adding a generator with no need to modify DBIC.pm
+=item Allow adding a generator (plugin) with no need to modify DBIC.pm
 
 =item add parameters to not generate validation or association in model method
 
@@ -499,5 +497,9 @@ __END__
 =item restore initial key order
 
 =item use JavaScript::Beautifier
+
+=item generate unit test files
+
+=item add a key order option
 
 =back
