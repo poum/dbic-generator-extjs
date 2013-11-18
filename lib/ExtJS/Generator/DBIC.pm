@@ -126,7 +126,7 @@ has 'typeTranslator' => (
 
 =head2 new
 
-  my$ generator = ExtJS::Generator::DBIC->new(
+  my $generator = ExtJS::Generator::DBIC->new(
     schema_name => 'My::Schema',
     js_namespace => 'My.App',
     path => 'public/js/app',
