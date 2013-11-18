@@ -1,114 +1,114 @@
 {
-    __1__extend__:"Ext.data.Model",
-    __2__comment__:"COMMENT_1",    __3__fields__:
+    __000001__extend__:"Ext.data.Model",
+    __000002__comment__:"COMMENT_1",    __000003__fields__:
         [
             {
-                __4__name__:"id",
-                __5__type__:"int"
+                __000004__name__:"id",
+                __000005__type__:"int"
             },
             
             {
-                __6__defaultValue__:"hello",
-                __7__name__:"title",
-                __8__type__:"string"
+                __000006__defaultValue__:"hello",
+                __000007__name__:"title",
+                __000008__type__:"string"
             },
             
             {
-                __9__name__:"description",
-                __10__type__:"string"
+                __000009__name__:"description",
+                __000010__type__:"string"
             },
             
             {
-                __11__name__:"email",
-                __12__type__:"string"
+                __000011__name__:"email",
+                __000012__type__:"string"
             },
             
             {
-                __13__name__:"explicitnulldef",
-                __14__type__:"string"
+                __000013__name__:"explicitnulldef",
+                __000014__type__:"string"
             },
             
             {
-                __15__name__:"explicitemptystring",
-                __16__type__:"string"
+                __000015__name__:"explicitemptystring",
+                __000016__type__:"string"
             },
-            {__17__comment__:"COMMENT_2"},            {
-                __18__name__:"emptytagdef",
-                __19__type__:"string",
-                __20__defaultValue__: "I will survive !"
-            },
-            
-            {
-                __21__defaultValue__:2,
-                __22__name__:"another_id",
-                __23__type__:"int"
+            {__000017__comment__:"COMMENT_2"},            {
+                __000018__name__:"emptytagdef",
+                __000019__type__:"string",
+                __000020__defaultValue__: "I will survive !"
             },
             
             {
-                __24__name__:"timest",
-                __25__type__:"date"
+                __000021__defaultValue__:2,
+                __000022__name__:"another_id",
+                __000023__type__:"int"
             },
             
             {
-                __26__defaultValue__:false,
-                __27__name__:"boolfield",
-                __28__type__:"boolean"
+                __000024__name__:"timest",
+                __000025__type__:"date"
+            },
+            
+            {
+                __000026__defaultValue__:false,
+                __000027__name__:"boolfield",
+                __000028__type__:"boolean"
             }
         ],
-    __29__proxy__:
+    __000029__proxy__:
         {
-            __30__api__:
+            __000030__api__:
                 {
-                    __31__create__:"/basic/create",
-                    __32__destroy__:"/basic/delete",
-                    __33__read__:"/basic/read",
-                    __34__update__:"/basic/update"
+                    __000031__create__:"/basic/create",
+                    __000032__destroy__:"/basic/delete",
+                    __000033__read__:"/basic/read",
+                    __000034__update__:"/basic/update"
                 },
-            __35__type__:"ajax"
+            __000035__type__:"ajax"
         },
-    __36__validations__:
+    __000036__validations__:
         [
             
             {
-                __37__field__:"id",
-                __38__type__:"presence"
+                __000037__field__:"id",
+                __000038__type__:"presence"
             },
             
             {
-                __39__field__:"title",
-                __40__type__:"presence"
+                __000039__field__:"title",
+                __000040__type__:"presence"
             },
             
             {
-                __41__field__:"title",
-                __42__max__:"100",
-                __43__type__:"length"
+                __000041__field__:"title",
+                __000042__max__:"100",
+                __000043__type__:"length"
             },
             
             {
-                __44__field__:"email",
-                __45__max__:"500",
-                __46__type__:"length"
+                __000044__field__:"email",
+                __000045__max__:"500",
+                __000046__type__:"length"
             },
             
             {
-                __47__field__:"boolfield",
-                __48__type__:"presence"
+                __000047__field__:"boolfield",
+                __000048__type__:"presence"
             }
         ],
-    __49__associations__:
+    __000049__associations__:
         [
             
             {
-                __50__associationKey__:"another_id",
-                __51__foreign__:"another_id",
-                __52__model__:"Another",
-                __53__primaryKey__:"id",
-                __54__type__:"belongsTo"
+                __000050__associationKey__:"another_id",
+                __000051__foreign__:"another_id",
+                __000052__model__:"Another",
+                __000053__primaryKey__:"id",
+                __000054__type__:"belongsTo"
             }
         ],
-    __55__comment__:"COMMENT_3",    __56__html__: "METHOD_1",
+    __000055__comment__:"COMMENT_3",    __000056__html__: "METHOD_1",
 
-    __57__comment__:"COMMENT_4",
-    __58__add__: "METHOD_2"
+    __000057__comment__:"COMMENT_4",
+    __000058__add__: "METHOD_2"
 }

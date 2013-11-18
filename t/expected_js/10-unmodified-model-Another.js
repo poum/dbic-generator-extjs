@@ -17,8 +17,8 @@ Ext.define('My.model.Another', {
         [
             
             {
-                field:"id",
-                type:"presence"
+                type:"presence",
+                field:"id"
             }
         ],
     associations:
@@ -34,13 +34,13 @@ Ext.define('My.model.Another', {
         ],
     proxy:
         {
+            type:"ajax",
             api:
                 {
-                    create:"/another/create",
-                    destroy:"/another/delete",
                     read:"/another/read",
-                    update:"/another/update"
-                },
-            type:"ajax"
+                    create:"/another/create",
+                    update:"/another/update",
+                    destroy:"/another/delete"
+                }
         }
 });

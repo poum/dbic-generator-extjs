@@ -78,11 +78,12 @@ has 'order' => (
   isa => 'HashRef',
   default => sub {
 
+    # move in Model.pm, an Element instance of
     {
-      model => [ qw/extend fields validations associations proxy/ ],
-      # not used yet ...
-      fields => [ qw/name type defaultValue/ ],
-      # associations, validations ....
+      model => [ qw/extend requires idProperty idgen clientIdProperty defaultProxyType fields validations associations belongsTo hasMany proxy listeners/ ],
+      field => [ qw/name type defaultValue useNull convert mapping persist serialize sortType sortDir dateFormat dateReadFormat dateWriteFormat/ ],
+      validation => [ qw/type field list matcher min max/ ],
+      # associations, belongsTo, hasMany ....
     }
   }
 );
@@ -216,12 +217,39 @@ sub model {
 
   # translate keys in ordered ones
   my %o = ();
+  my $cpt = 1;
   if (keys %$model) {
+    foreach (keys %$model) {
+      /__\d+__(.+)__/ and $o{$1} = $_;
+    }
+    my $name;
+    foreach my $field (@{$model->{$o{fields}}}) {
+      ($name) = grep /__name__/, keys %$field; 
+      $name = $field->{$name};
+      foreach (keys %$field) {
+        /__\d+__(.+)__/ and $o{$name}->{$1} = $_;
+      }
+    }
+    my $type;
+    foreach my $field (@{$model->{$o{validations}}}) {
+      ($name) = grep /__field__/, keys %$field;
+      ($type) = grep /__type__/, keys %$field;
+      foreach (keys %$field) {
+        /__\d+__(.+)__/ and $o{$name}->{validation}->{$type}->{$1} = $_;
+      }
+    }
   }
   else {
-    my $cpt = 1;
     foreach (@{$self->order->{model}}) {
-      $o{$_} = '__' . $cpt . '__' . $_ . '__';
+      # TODO: add DBIC parameter keyNumSize & keySeparator and pass them to JsFile
+      $o{$_} = sprintf('__%06d__%s__', $cpt, $_);
+      $cpt++;
+    }
+  }
+
+  foreach my $element (qw/field validation/) {
+    foreach (@{$self->order->{$element}}) {
+      $o{$element}->{$_} = sprintf('__%06d__%s__', $cpt, $_);
       $cpt++;
     }
   }
@@ -230,62 +258,84 @@ sub model {
   unless (exists $model->{$o{proxy}}) {
     my $url = '/' . lc $name . '/';
     $model->{$o{proxy}} = {
-      type => 'ajax',
-      api => {
-        read    => $url . 'read',
-        create  => $url . 'create',
-        update  => $url . 'update',
-        destroy => $url . 'delete'
+      __1__type__ => 'ajax',
+      __2__api__ => {
+        __3__read__    => $url . 'read',
+        __4__create__  => $url . 'create',
+        __5__update__  => $url . 'update',
+        __6__destroy__ => $url . 'delete'
       }
     };
   }
 
+  # take care of field definitions and validations
   my $resultset = $self->schema->source($name); 
   my @columns = $resultset->columns;
-  my ($field, $info, @updatedField);
+  my ($field, $fieldType, $info, @updatedField, $O, $new);
   foreach my $column (@columns) {
     $info = $resultset->column_info($column);
 
-    # the field already exists ?
-    @updatedField = grep { $_->{name} eq $column } @{$model->{$o{fields}}};
-    $field = @updatedField ? $updatedField[0] : { name => $column };
-  
-    $field->{type} = $self->typeTranslator->translate($info->{data_type});
-
-    if ($info->{default_value}) {
-      if ($field->{type} eq 'boolean') {
-        $field->{defaultValue} = $info->{default_value} eq 'true' ? JSON::DWIW->true : JSON::DWIW->false;  
-      } 
-      else {
-        $field->{defaultValue} = $info->{default_value}; 
-      }
-    }
-    push @{$model->{$o{fields}}}, $field unless @updatedField;
-
-    # the presence validation already exists ?
-    @updatedField = grep { $_->{field} eq $column and $_->{type} eq 'presence' } @{$model->{$o{validations}}};
-    if ($info->{is_nullable}) {
-      # suppress presence validation if the field is now nullable
-      $updatedField[0] = undef if @updatedField;
+    # the field already exists (so it has to be captured previously) ?
+    if (exists $o{$column}) {
+      $O = $o{$column};
+      @updatedField = grep { $_->{$O->{name}} eq $column } @{$model->{$o{fields}}};
+      $field = $updatedField[0];
     }
     else {
+      $O = $o{field};
+      $field = { $O->{name} => $column };
+    }
+ 
+    # type created or remplaced by the new one 
+    $fieldType = $field->{$O->{type}} = $self->typeTranslator->translate($info->{data_type});
+
+    if ($info->{default_value}) {
+      if ($field->{$O->{type}} eq 'boolean') {
+        $field->{$O->{defaultValue}} = $info->{default_value} eq 'true' ? JSON::DWIW->true : JSON::DWIW->false;  
+      } 
+      else {
+        $field->{$O->{defaultValue}} = $info->{default_value}; 
+      }
+    }
+    push @{$model->{$o{fields}}}, $field unless exists $o{$column}; 
+
+    # the presence validation already exists ?
+    if (exists $o{$column} and exists $o{$column}->{validation} and exists $o{$column}->{validation}->{presence}) { 
+      $O = $o{$column}->{validation}->{presence};
+      @updatedField = grep { $_->{$O->{field}} eq $column and $_->{$O->{type}} eq 'presence' } @{$model->{$o{validations}}};
+      # suppress presence validation if the field is now nullable
+      $updatedField[0] = undef if $info->{is_nullable};
+    }
+    elsif ( not $info->{is_nullable} ) {
       # add presence validation if it doesn't already exist
-      push @{$model->{$o{validations}}}, { type => 'presence', field => $column } unless @updatedField;
+      $O = $o{validation};
+      push @{$model->{$o{validations}}}, { $O->{type} => 'presence', $O->{field} => $column };
     }
 
     # the max size validation already exists ?
-    @updatedField = grep { $_->{field} eq $column and $_->{type} eq 'length' and $_->{max} } @{$model->{$o{validations}}};
-    if ($info->{size} and $field->{type} eq 'string') {
-      $field = @updatedField ? $updatedField[0] : { field => $column, type => 'length' };
-      $field->{max} = $info->{size};
-      push @{$model->{$o{validations}}}, $field unless @updatedField;
+    if (exists $o{$column} and exists $o{$column}->{validation} and exists $o{$column}->{validation}->{'length'}) {
+      $O = $o{$column}->{validation}->{'length'};
+      @updatedField = grep { $_->{$O->{field}} eq $column and $_->{$O->{type}} eq 'length' and $_->{$O->{'max'}} } @{$model->{$o{validations}}};
+      $new = 0;
     }
     else {
-      # suppress the validation if it's became useless
+      $O = $o{validation};
+      $new = 1;
+      #@updatedField = undef;
+    }
+
+    if ($info->{size} and $fieldType eq 'string') {
+      $field = @updatedField ? $updatedField[0] : { $O->{type} => 'length', $O->{field} => $column };
+      $field->{$O->{'max'}} = $info->{size};
+      push @{$model->{$o{validations}}}, $field if $new; # unless exists @updatedField;
+    }
+    else {
+      # suppress the validation if it's now useless
       $updatedField[0] = undef if @updatedField; 
     }
   }
 
+  # take care of associations
   my ($relinfo, $attrs, $modelname, $reltype);
   foreach my $relation ($resultset->relationships()) {
     $relinfo = $resultset->relationship_info($relation);

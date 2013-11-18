@@ -257,7 +257,7 @@ sub parse {
       $cpt = 1;
       while ($object =~ /("?)([A-Za-z0-9_]+)\1\s*:/s) {
         $mask = $1 . $2 . $1;
-        $object =~ s/$mask:/##$cpt##$mask##:/s;
+        $object =~ s/$mask:/sprintf('##%06d##%s##:', $cpt, $mask)/se;
         $cpt++;
       }
 

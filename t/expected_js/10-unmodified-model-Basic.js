@@ -9,9 +9,9 @@ Ext.define('My.model.Basic', {
             },
             
             {
-                defaultValue:"hello",
                 name:"title",
-                type:"string"
+                type:"string",
+                defaultValue:"hello"
             },
             
             {
@@ -40,9 +40,9 @@ Ext.define('My.model.Basic', {
             },
             
             {
-                defaultValue:"2",
                 name:"another_id",
-                type:"int"
+                type:"int",
+                defaultValue:"2"
             },
             
             {
@@ -51,39 +51,39 @@ Ext.define('My.model.Basic', {
             },
             
             {
-                defaultValue:false,
                 name:"boolfield",
-                type:"boolean"
+                type:"boolean",
+                defaultValue:false
             }
         ],
     validations:
         [
             
             {
-                field:"id",
-                type:"presence"
+                type:"presence",
+                field:"id"
             },
             
             {
+                type:"presence",
+                field:"title"
+            },
+            
+            {
+                type:"length",
                 field:"title",
-                type:"presence"
+                max:"100"
             },
             
             {
-                field:"title",
-                max:"100",
-                type:"length"
-            },
-            
-            {
+                type:"length",
                 field:"email",
-                max:"500",
-                type:"length"
+                max:"500"
             },
             
             {
-                field:"boolfield",
-                type:"presence"
+                type:"presence",
+                field:"boolfield"
             }
         ],
     associations:
@@ -99,13 +99,13 @@ Ext.define('My.model.Basic', {
         ],
     proxy:
         {
+            type:"ajax",
             api:
                 {
-                    create:"/basic/create",
-                    destroy:"/basic/delete",
                     read:"/basic/read",
-                    update:"/basic/update"
-                },
-            type:"ajax"
+                    create:"/basic/create",
+                    update:"/basic/update",
+                    destroy:"/basic/delete"
+                }
         }
 });
