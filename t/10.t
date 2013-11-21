@@ -69,10 +69,9 @@ foreach my $model (@models) {
     equivalent_files_ok("model/$model.js", "10-unmodified-model-$model.js", 'Generated ExtJS ' . $model . ' model ok');
 }
 
-
 ok($generator->models(), 'Extjs model global regeneration');
 
-BAIL_OUT("houba");
+#BAIL_OUT("houba");
 foreach my $model (@models) {
     ok(-e "$gpath/model/$model.js.bak", "$model backup exists");
     equivalent_files_ok("model/$model.js.bak", "10-unmodified-model-$model.js", "Generated ExtJS $model backup ok");

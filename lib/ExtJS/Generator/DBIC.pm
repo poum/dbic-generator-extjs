@@ -271,14 +271,14 @@ sub model {
   # take care of field definitions and validations
   my $resultset = $self->schema->source($name); 
   my @columns = $resultset->columns;
-  my ($field, $fieldType, $info, @updatedField, $O, $new);
+  my ($field, $fieldType, $info, $O, $new);
   foreach my $column (@columns) {
     $info = $resultset->column_info($column);
 
-    # the field already exists (so it has to be captured previously) ?
+    # the field already exists (so it has been captured previously) ?
     if (exists $o{$column}) {
       $O = $o{$column};
-      @updatedField = grep { $_->{$O->{name}} eq $column } @{$model->{$o{fields}}};
+      my @updatedField = grep { exists $_->{$O->{name}} and $_->{$O->{name}} eq $column } @{$model->{$o{fields}}};
       $field = $updatedField[0];
     }
     else {
@@ -302,9 +302,9 @@ sub model {
     # the presence validation already exists ?
     if (exists $o{$column} and exists $o{$column}->{validation} and exists $o{$column}->{validation}->{presence}) { 
       $O = $o{$column}->{validation}->{presence};
-      @updatedField = grep { $_->{$O->{field}} eq $column and $_->{$O->{type}} eq 'presence' } @{$model->{$o{validations}}};
+      my @updatedValidationPresence = grep { $_->{$O->{field}} eq $column and $_->{$O->{type}} eq 'presence' } @{$model->{$o{validations}}};
       # suppress presence validation if the field is now nullable
-      $updatedField[0] = undef if $info->{is_nullable};
+      $updatedValidationPresence[0] = undef if $info->{is_nullable};
     }
     elsif ( not $info->{is_nullable} ) {
       # add presence validation if it doesn't already exist
@@ -312,26 +312,26 @@ sub model {
       push @{$model->{$o{validations}}}, { $O->{type} => 'presence', $O->{field} => $column };
     }
 
+    my @updatedValidationLength;
     # the max size validation already exists ?
     if (exists $o{$column} and exists $o{$column}->{validation} and exists $o{$column}->{validation}->{'length'}) {
       $O = $o{$column}->{validation}->{'length'};
-      @updatedField = grep { $_->{$O->{field}} eq $column and $_->{$O->{type}} eq 'length' and $_->{$O->{'max'}} } @{$model->{$o{validations}}};
+      @updatedValidationLength = grep { $_->{$O->{field}} eq $column and $_->{$O->{type}} eq 'length' and $_->{$O->{'max'}} } @{$model->{$o{validations}}};
       $new = 0;
     }
     else {
       $O = $o{validation};
       $new = 1;
-      #@updatedField = undef;
     }
 
     if ($info->{size} and $fieldType eq 'string') {
-      $field = @updatedField ? $updatedField[0] : { $O->{type} => 'length', $O->{field} => $column };
+      $field = @updatedValidationLength ? $updatedValidationLength[0] : { $O->{type} => 'length', $O->{field} => $column };
       $field->{$O->{'max'}} = $info->{size};
-      push @{$model->{$o{validations}}}, $field if $new; # unless exists @updatedField;
+      push @{$model->{$o{validations}}}, $field if $new; # unless exists @updatedValidationLength;
     }
     else {
       # suppress the validation if it's now useless
-      $updatedField[0] = undef if @updatedField; 
+      $updatedValidationLength[0] = undef if @updatedValidationLength; 
     }
   }
 
@@ -364,12 +364,12 @@ sub model {
     }
     $rel_col =~ s/^foreign\.//;
     $our_col =~ s/^self\.//;
-    @updatedField = grep { $_->{model} eq $modelname and $_->{type} eq $reltype } @{$model->{$o{associations}}};
-    $field = @updatedField ? $updatedField[0] : { model => $modelname, type => $reltype };
+    my @updatedAssociation = grep { $_->{model} eq $modelname and $_->{type} eq $reltype } @{$model->{$o{associations}}};
+    $field = @updatedAssociation ? $updatedAssociation[0] : { model => $modelname, type => $reltype };
     $field->{associationKey} = $relation;
     $field->{primaryKey} = $rel_col;
     $field->{foreign} = $our_col;
-    push @{$model->{$o{associations}}}, $field unless @updatedField;
+    push @{$model->{$o{associations}}}, $field unless @updatedAssociation;
   }
 
   $jsFile->object($self->json->to_json($model));
