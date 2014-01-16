@@ -15,17 +15,12 @@ use Carp;
 
 The loaded file will be split in 3 parts:
 
-=over 4
+=for :list
+* the prefix: the text before the usefull part
+* the object, ie the usefull part. All methods and comments in it are replaced by JSON containers
+* the suffix: the text after the usefull part
 
-=item * the prefix: the text before the usefull part
-
-=item * the object, ie the usefull part. All methods and comments in it are replaced by JSON containers
-
-=item * the suffix: the text after the usefull part
-
-=back
-
-=head2 className
+=method className
 
 The defined class name
 
@@ -36,7 +31,7 @@ has 'className' => (
     isa => 'Str'
 );
 
-=head2 file
+=method file
 
 File full path
 
@@ -47,7 +42,7 @@ has 'file' => (
     isa => 'Str'
 );
 
-=head2 prefix
+=method prefix
 
 File part before the define part, to be keept as it is
 
@@ -59,7 +54,7 @@ has 'prefix' => (
     default => sub { '' }
 );
 
-=head2 define
+=method define
 
 The define line 
 
@@ -70,7 +65,7 @@ has 'define' => (
     isa => 'Str'
 );
 
-=head2 object
+=method object
 
 File usefull part
 
@@ -82,7 +77,19 @@ has 'object' => (
     default => sub { '{}' }
 );
 
-=head2 end_define
+=method k
+
+Hash to link ordered key to canonic ones
+
+=cut
+
+has 'k' => (
+  is => 'rw',
+  isa => 'HashRef',
+  default => sub { {} }
+);
+
+=method end_define
 
 The ending of define
 
@@ -94,7 +101,7 @@ has 'end_define' => (
     default => sub { ');' }
 );
 
-=head2 funtions 
+=method methods
 
 All method body found in object
 
@@ -106,7 +113,7 @@ has 'methods' => (
     default => sub { {} }
 );
 
-=head2 comments
+=method comments
 
 All comments found in object
 
@@ -118,7 +125,7 @@ has 'comments' => (
     default => sub { {} }
 );
 
-=head2 suffix
+=method suffix
 
 File part after the usefull part, to be kept as it is
 
@@ -130,46 +137,30 @@ has 'suffix', => (
     default => sub { '' }
 );
 
-=head2 parse
+=method parse
 
 Parse file. The .js extension will be automatically added if omitted.
 The following assertions are made:
 
-=over 4
-
-=item the file contains at least one Ext.define on which we have to work
-
-=item this Ext.define class name ends like the file name does, by example: 'My.model.Basic' for Basic.js
-
-=back
+=for :list
+* the file contains at least one Ext.define on which we have to work
+* this Ext.define class name ends like the file name does, by example: 'My.model.Basic' for Basic.js
 
 =head3 parameters
 
-=over 4
-
-=item type : ExtJS class type to generate (model - default -, store, controller or view.Form, view.Tree, view.Grid)
-
-=item file : the javascript class definition file to parse (B<mandatory>). The .js extension will be automatically added if needed.
-
-=item path : the javascript class definition file path where the file should be
-
-=back
+=for :list
+* type : ExtJS class type to generate (model - default -, store, controller or view.Form, view.Tree, view.Grid)
+* file : the javascript class definition file to parse (B<mandatory>). The .js extension will be automatically added if needed.
+* path : the javascript class definition file path where the file should be
 
 JsFile will attempt to retrieve file using the following strategies :
 
-=over 4
-
-=item if the file name is an absolute path (starting with /) or a relative path from the current dir or the upper dir, only try this location
-
-=item 'path'/'type'/'file' (will stay the location if no file is found). If 'path' isn't absolute, './' is added.
-
-=item 'path'/'file'. If 'path' isn't absolute, './' is added.
-
-=item ./'type'/'file'
-
-=item ./'file'
-
-=back
+=for :list
+* if the file name is an absolute path (starting with /) or a relative path from the current dir or the upper dir, only try this location
+* 'path'/'type'/'file' (will stay the location if no file is found). If 'path' isn't absolute, './' is added.
+* 'path'/'file'. If 'path' isn't absolute, './' is added.
+* ./'type'/'file'
+* ./'file'
 
 =head3 return
 
@@ -292,7 +283,7 @@ sub findContext {
   return (substr($text, -1, 1), $virgule);
 }
 
-=head2 output
+=method output
 
 Assemble all parsed parts into one string
 
@@ -319,17 +310,14 @@ sub output {
     return $self->prefix . "Ext.define('" . $self->className . "', $object" . $self->end_define . $self->suffix;
 }
 
-=head2 write
+=method write
 
 Write the generated file.
 
 =head3 Parameter
 
-=over 4
-
-=item B<backup> : flag to request backup (true by default)
-
-=back
+=for :list
+* B<backup> : flag to request backup (true by default)
 
 =cut
 sub write {
